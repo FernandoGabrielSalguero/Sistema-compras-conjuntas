@@ -129,6 +129,36 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
             color: #166534;
         }
 
+        .badge-estado {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.2rem 0.55rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-estado-completada {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-estado-cancelada {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-estado-proceso {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge-estado-pendiente {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
         @media (max-width: 768px) {
             .table-scroll .data-table {
                 min-width: 720px;
@@ -230,7 +260,7 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
 
                 <div class="card tabla-card">
                     <div class="table-header">
-                        <h2>Fincas que participan en operativos</h2>
+                        <h2>Cosecha Mecanica</h2>
                         <button id="btnExportFincas" type="button" class="icon-export-btn" title="Descargar Excel" aria-label="Descargar Excel">
                             <span class="material-icons">download</span>
                         </button>
@@ -262,6 +292,42 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
                         </table>
                     </div>
                 </div>
+
+                <div class="card tabla-card">
+                    <div class="table-header">
+                        <h2>Pulverizaci&oacute;n con drones</h2>
+                        <button id="btnExportDrones" type="button" class="icon-export-btn" title="Descargar Excel" aria-label="Descargar Excel">
+                            <span class="material-icons">download</span>
+                        </button>
+                    </div>
+                    <div class="table-meta">
+                        <strong>Registros:</strong> <span id="drones-count">0</span>
+                        <span class="table-meta-sep">|</span>
+                        <strong>Completadas:</strong> <span id="drones-done-count">0</span>
+                        <span class="table-meta-sep">|</span>
+                        <strong>Pendientes:</strong> <span id="drones-pending-count">0</span>
+                    </div>
+                    <div class="tabla-wrapper table-scroll">
+                        <table class="data-table fincas-operativos-table" aria-label="Solicitudes de pulverizacion con drones">
+                            <thead>
+                                <tr>
+                                    <th>Solicitud</th>
+                                    <th>Productor</th>
+                                    <th>Estado</th>
+                                    <th>Piloto</th>
+                                    <th>Fecha servicio</th>
+                                    <th>Superficie (ha)</th>
+                                    <th>Costo total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="drones-table-body">
+                                <tr>
+                                    <td colspan="7">Cargando solicitudes...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </section>
         </div>
     </div>
@@ -269,6 +335,7 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
     <script>
         const API_URL = '../../controllers/sve_facturacionController.php';
         let latestFincasRows = [];
+        let latestDronesRows = [];
 
         function showUserAlert(type, message) {
             if (typeof showAlert === 'function') {
@@ -383,6 +450,116 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
             }
         }
 
+        function actualizarContadoresDrones(totales, filas) {
+            const totalEl = document.getElementById('drones-count');
+            const doneEl = document.getElementById('drones-done-count');
+            const pendingEl = document.getElementById('drones-pending-count');
+            if (!totalEl || !doneEl || !pendingEl) return;
+
+            const total = Number(totales?.total_registros ?? filas.length) || 0;
+            const completadas = Number(totales?.completadas ?? filas.filter((fila) => fila.estado === 'completada').length) || 0;
+            const pendientes = Number(totales?.pendientes ?? filas.filter((fila) => !['completada', 'cancelada'].includes(String(fila.estado || '').toLowerCase())).length) || 0;
+
+            totalEl.textContent = String(total);
+            doneEl.textContent = String(completadas);
+            pendingEl.textContent = String(pendientes);
+        }
+
+        function prettyEstadoDrone(estado) {
+            const raw = String(estado || '').toLowerCase();
+            const labels = {
+                ingresada: 'Ingresada',
+                procesando: 'Procesando',
+                aprobada_coop: 'Aprobada coop',
+                visita_realizada: 'Visita realizada',
+                completada: 'Completada',
+                cancelada: 'Cancelada'
+            };
+            return labels[raw] || estado || '-';
+        }
+
+        function claseEstadoDrone(estado) {
+            const raw = String(estado || '').toLowerCase();
+            if (raw === 'completada') return 'badge-estado-completada';
+            if (raw === 'cancelada') return 'badge-estado-cancelada';
+            if (raw === 'procesando' || raw === 'aprobada_coop' || raw === 'visita_realizada') return 'badge-estado-proceso';
+            return 'badge-estado-pendiente';
+        }
+
+        function formatearMontoDrone(fila) {
+            const total = fila.costo_total ?? '';
+            if (total === null || total === '') return '-';
+            const num = Number(String(total).replace(',', '.'));
+            if (!Number.isFinite(num)) return String(total);
+            const moneda = fila.moneda ? `${fila.moneda} ` : '';
+            return `${moneda}${num.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        }
+
+        function renderDrones(filas) {
+            const tbody = document.getElementById('drones-table-body');
+            if (!tbody) return;
+
+            if (!filas.length) {
+                tbody.innerHTML = '<tr><td colspan="7">No hay solicitudes de pulverizacion con drones.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = '';
+            filas.forEach((fila) => {
+                const tr = document.createElement('tr');
+
+                [fila.solicitud_id || '-', fila.productor_nombre || '-'].forEach((valor) => {
+                    const td = document.createElement('td');
+                    td.className = 'cell-wrap-3';
+                    aplicarSaltoTerceraPalabra(td, valor);
+                    tr.appendChild(td);
+                });
+
+                const tdEstado = document.createElement('td');
+                const badge = document.createElement('span');
+                badge.className = `badge-estado ${claseEstadoDrone(fila.estado)}`;
+                badge.textContent = prettyEstadoDrone(fila.estado);
+                tdEstado.appendChild(badge);
+                tr.appendChild(tdEstado);
+
+                [fila.piloto || '-', fila.fecha_visita || '-', fila.superficie_ha ?? '-', formatearMontoDrone(fila)].forEach((valor) => {
+                    const td = document.createElement('td');
+                    td.className = 'cell-wrap-3';
+                    aplicarSaltoTerceraPalabra(td, valor);
+                    tr.appendChild(td);
+                });
+
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function cargarSolicitudesDrones() {
+            const tbody = document.getElementById('drones-table-body');
+            try {
+                const res = await fetch(`${API_URL}?action=drones`, {
+                    credentials: 'same-origin',
+                    cache: 'no-store'
+                });
+                const payload = await res.json();
+                if (!res.ok || !payload.success) {
+                    throw new Error(payload.message || 'No se pudieron cargar las solicitudes de drones.');
+                }
+
+                const data = payload.data || {};
+                latestDronesRows = Array.isArray(data.items) ? data.items : [];
+                actualizarContadoresDrones(data.totales || {}, latestDronesRows);
+                renderDrones(latestDronesRows);
+            } catch (error) {
+                console.error(error);
+                latestDronesRows = [];
+                actualizarContadoresDrones({}, []);
+                if (tbody) {
+                    tbody.innerHTML = '<tr><td colspan="7">No se pudieron cargar las solicitudes de drones.</td></tr>';
+                }
+                showUserAlert('error', error.message || 'No se pudieron cargar las solicitudes de drones.');
+            }
+        }
+
         function descargarExcelXlsx(columns, rows, filename) {
             if (!window.XLSX) {
                 showUserAlert('error', 'No se pudo generar el Excel.');
@@ -453,10 +630,105 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
             showUserAlert('success', 'Excel generado correctamente.');
         }
 
+        function exportarDronesExcel() {
+            if (!latestDronesRows.length) {
+                showUserAlert('warning', 'No hay registros para exportar.');
+                return;
+            }
+
+            const columnas = [
+                { key: 'solicitud_id', label: 'ID Solicitud' },
+                { key: 'productor_id_real', label: 'ID Real productor' },
+                { key: 'productor_nombre', label: 'Productor' },
+                { key: 'ses_usuario', label: 'Usuario sesion' },
+                { key: 'ses_nombre', label: 'Nombre sesion' },
+                { key: 'ses_correo', label: 'Correo' },
+                { key: 'ses_telefono', label: 'Telefono' },
+                { key: 'ses_direccion', label: 'Direccion sesion' },
+                { key: 'ses_cuit', label: 'CUIT' },
+                { key: 'ses_rol', label: 'Rol sesion' },
+                { key: 'representante', label: 'Representante' },
+                { key: 'estado', label: 'Estado' },
+                { key: 'motivo_cancelacion', label: 'Motivo cancelacion' },
+                { key: 'fecha_visita', label: 'Fecha servicio' },
+                { key: 'hora_visita_desde', label: 'Hora desde' },
+                { key: 'hora_visita_hasta', label: 'Hora hasta' },
+                { key: 'piloto', label: 'Piloto' },
+                { key: 'piloto_id', label: 'ID Piloto' },
+                { key: 'superficie_ha', label: 'Superficie solicitada (ha)' },
+                { key: 'forma_pago', label: 'Forma de pago' },
+                { key: 'forma_pago_id', label: 'ID Forma de pago' },
+                { key: 'coop_descuento_nombre', label: 'Cooperativa descuento' },
+                { key: 'dir_provincia', label: 'Provincia' },
+                { key: 'dir_localidad', label: 'Localidad' },
+                { key: 'dir_calle', label: 'Calle' },
+                { key: 'dir_numero', label: 'Numero' },
+                { key: 'en_finca', label: 'En finca' },
+                { key: 'ubicacion_lat', label: 'Latitud' },
+                { key: 'ubicacion_lng', label: 'Longitud' },
+                { key: 'ubicacion_acc', label: 'Precision ubicacion' },
+                { key: 'ubicacion_ts', label: 'Fecha ubicacion' },
+                { key: 'linea_tension', label: 'Linea tension' },
+                { key: 'zona_restringida', label: 'Zona restringida' },
+                { key: 'corriente_electrica', label: 'Corriente electrica' },
+                { key: 'agua_potable', label: 'Agua potable' },
+                { key: 'libre_obstaculos', label: 'Libre obstaculos' },
+                { key: 'area_despegue', label: 'Area despegue' },
+                { key: 'observaciones_productor', label: 'Observaciones productor' },
+                { key: 'moneda', label: 'Moneda' },
+                { key: 'costo_base_por_ha', label: 'Costo base por ha' },
+                { key: 'base_ha', label: 'Base ha' },
+                { key: 'base_total', label: 'Base total' },
+                { key: 'productos_total', label: 'Productos total' },
+                { key: 'costo_total', label: 'Costo total' },
+                { key: 'costo_desglose_json', label: 'Desglose costos JSON' },
+                { key: 'rangos', label: 'Rangos' },
+                { key: 'motivos', label: 'Motivos' },
+                { key: 'productos', label: 'Productos' },
+                { key: 'productos_fuente', label: 'Fuente productos' },
+                { key: 'productos_costo_ha', label: 'Costo ha productos' },
+                { key: 'productos_total_detalle', label: 'Total productos detalle' },
+                { key: 'recetas', label: 'Recetas y uso de productos' },
+                { key: 'volumen_ha', label: 'Volumen ha' },
+                { key: 'velocidad_vuelo', label: 'Velocidad vuelo' },
+                { key: 'alto_vuelo', label: 'Alto vuelo' },
+                { key: 'ancho_pasada', label: 'Ancho pasada' },
+                { key: 'tamano_gota', label: 'Tamano gota' },
+                { key: 'observaciones_parametros', label: 'Observaciones parametros' },
+                { key: 'observaciones_agua', label: 'Observaciones agua' },
+                { key: 'reporte_nom_cliente', label: 'Reporte cliente' },
+                { key: 'reporte_nom_piloto', label: 'Reporte piloto' },
+                { key: 'reporte_nom_encargado', label: 'Reporte encargado' },
+                { key: 'reporte_fecha_visita', label: 'Reporte fecha visita' },
+                { key: 'reporte_hora_ingreso', label: 'Reporte hora ingreso' },
+                { key: 'reporte_hora_egreso', label: 'Reporte hora egreso' },
+                { key: 'reporte_nombre_finca', label: 'Reporte finca' },
+                { key: 'reporte_cultivo_pulverizado', label: 'Reporte cultivo pulverizado' },
+                { key: 'reporte_cuadro_cuartel', label: 'Reporte cuadro cuartel' },
+                { key: 'reporte_sup_pulverizada', label: 'Reporte superficie pulverizada' },
+                { key: 'reporte_vol_aplicado', label: 'Reporte volumen aplicado' },
+                { key: 'reporte_vel_viento', label: 'Reporte velocidad viento' },
+                { key: 'reporte_temperatura', label: 'Reporte temperatura' },
+                { key: 'reporte_humedad_relativa', label: 'Reporte humedad relativa' },
+                { key: 'reporte_lavado_dron_miner', label: 'Reporte lavado dron/miner' },
+                { key: 'reporte_triple_lavado_envases', label: 'Reporte triple lavado envases' },
+                { key: 'reporte_observaciones', label: 'Reporte observaciones' },
+                { key: 'eventos', label: 'Eventos' },
+                { key: 'created_at', label: 'Creado' },
+                { key: 'updated_at', label: 'Actualizado' },
+            ];
+
+            const stamp = new Date().toISOString().slice(0, 10);
+            descargarExcelXlsx(columnas, latestDronesRows, `pulverizacion_drones_facturacion_${stamp}.xlsx`);
+            showUserAlert('success', 'Excel generado correctamente.');
+        }
+
         document.addEventListener('DOMContentLoaded', async () => {
             const estado = document.getElementById('estadoModulo');
             const btnExportFincas = document.getElementById('btnExportFincas');
+            const btnExportDrones = document.getElementById('btnExportDrones');
             btnExportFincas?.addEventListener('click', exportarFincasExcel);
+            btnExportDrones?.addEventListener('click', exportarDronesExcel);
 
             try {
                 const res = await fetch(`${API_URL}?action=estado`, {
@@ -475,6 +747,7 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
             }
 
             cargarFincasOperativos();
+            cargarSolicitudesDrones();
         });
     </script>
 </body>

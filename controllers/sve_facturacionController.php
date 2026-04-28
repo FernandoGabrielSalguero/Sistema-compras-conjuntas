@@ -37,6 +37,14 @@ try {
         ]);
     }
 
+    if ($action === 'drones') {
+        $items = $model->obtenerSolicitudesDrones();
+        jsonResponse(true, [
+            'items' => $items,
+            'totales' => $model->obtenerTotalesDrones($items),
+        ]);
+    }
+
     jsonResponse(false, null, 'Accion no soportada.', 400);
 } catch (Throwable $e) {
     jsonResponse(false, null, 'Error interno: ' . $e->getMessage(), 500);

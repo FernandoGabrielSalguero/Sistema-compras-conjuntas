@@ -140,6 +140,214 @@ class SveFacturacionModel
         ];
     }
 
+    public function obtenerSolicitudesDrones(): array
+    {
+        $this->pdo->exec('SET SESSION group_concat_max_len = 65535');
+
+        $sql = "SELECT
+                    s.id AS solicitud_id,
+                    s.productor_id_real,
+                    COALESCE(ui.nombre, u.usuario, s.ses_usuario, s.ses_nombre, '') AS productor_nombre,
+                    s.ses_usuario,
+                    s.ses_nombre,
+                    s.ses_correo,
+                    s.ses_telefono,
+                    s.ses_direccion,
+                    s.ses_cuit,
+                    s.ses_rol,
+                    s.representante,
+                    s.superficie_ha,
+                    s.fecha_visita,
+                    s.hora_visita_desde,
+                    s.hora_visita_hasta,
+                    COALESCE(uip.nombre, up.usuario, '') AS piloto,
+                    s.piloto_id,
+                    s.forma_pago_id,
+                    fp.nombre AS forma_pago,
+                    s.coop_descuento_nombre,
+                    s.dir_provincia,
+                    s.dir_localidad,
+                    s.dir_calle,
+                    s.dir_numero,
+                    s.en_finca,
+                    s.ubicacion_lat,
+                    s.ubicacion_lng,
+                    s.ubicacion_acc,
+                    s.ubicacion_ts,
+                    s.linea_tension,
+                    s.zona_restringida,
+                    s.corriente_electrica,
+                    s.agua_potable,
+                    s.libre_obstaculos,
+                    s.area_despegue,
+                    s.observaciones AS observaciones_productor,
+                    s.estado,
+                    s.motivo_cancelacion,
+                    s.created_at,
+                    s.updated_at,
+                    c.moneda,
+                    c.costo_base_por_ha,
+                    c.base_ha,
+                    c.base_total,
+                    c.productos_total,
+                    c.total AS costo_total,
+                    c.desglose_json AS costo_desglose_json,
+                    rg.rangos,
+                    mt.motivos,
+                    it.productos,
+                    it.productos_fuente,
+                    it.productos_costo_ha,
+                    it.productos_total AS productos_total_detalle,
+                    rec.recetas,
+                    prm.volumen_ha,
+                    prm.velocidad_vuelo,
+                    prm.alto_vuelo,
+                    prm.ancho_pasada,
+                    prm.tamano_gota,
+                    prm.observaciones AS observaciones_parametros,
+                    prm.observaciones_agua,
+                    rep.nom_cliente AS reporte_nom_cliente,
+                    rep.nom_piloto AS reporte_nom_piloto,
+                    rep.nom_encargado AS reporte_nom_encargado,
+                    rep.fecha_visita AS reporte_fecha_visita,
+                    rep.hora_ingreso AS reporte_hora_ingreso,
+                    rep.hora_egreso AS reporte_hora_egreso,
+                    rep.nombre_finca AS reporte_nombre_finca,
+                    rep.cultivo_pulverizado AS reporte_cultivo_pulverizado,
+                    rep.cuadro_cuartel AS reporte_cuadro_cuartel,
+                    rep.sup_pulverizada AS reporte_sup_pulverizada,
+                    rep.vol_aplicado AS reporte_vol_aplicado,
+                    rep.vel_viento AS reporte_vel_viento,
+                    rep.temperatura AS reporte_temperatura,
+                    rep.humedad_relativa AS reporte_humedad_relativa,
+                    rep.lavado_dron_miner AS reporte_lavado_dron_miner,
+                    rep.triple_lavado_envases AS reporte_triple_lavado_envases,
+                    rep.observaciones AS reporte_observaciones,
+                    ev.eventos
+                FROM drones_solicitud s
+                LEFT JOIN drones_solicitud_costos c
+                    ON c.solicitud_id = s.id
+                LEFT JOIN dron_formas_pago fp
+                    ON fp.id = s.forma_pago_id
+                LEFT JOIN usuarios u
+                    ON u.id_real = s.productor_id_real
+                LEFT JOIN usuarios_info ui
+                    ON ui.usuario_id = u.id
+                LEFT JOIN usuarios up
+                    ON up.id = s.piloto_id
+                LEFT JOIN usuarios_info uip
+                    ON uip.usuario_id = up.id
+                LEFT JOIN (
+                    SELECT solicitud_id, GROUP_CONCAT(DISTINCT rango ORDER BY rango SEPARATOR ' | ') AS rangos
+                    FROM drones_solicitud_rango
+                    GROUP BY solicitud_id
+                ) rg
+                    ON rg.solicitud_id = s.id
+                LEFT JOIN (
+                    SELECT sm.solicitud_id,
+                           GROUP_CONCAT(DISTINCT COALESCE(dp.nombre, sm.otros_text, 'Sin motivo') ORDER BY dp.nombre, sm.otros_text SEPARATOR ' | ') AS motivos
+                    FROM drones_solicitud_motivo sm
+                    LEFT JOIN dron_patologias dp
+                        ON dp.id = sm.patologia_id
+                    GROUP BY sm.solicitud_id
+                ) mt
+                    ON mt.solicitud_id = s.id
+                LEFT JOIN (
+                    SELECT si.solicitud_id,
+                           GROUP_CONCAT(COALESCE(si.nombre_producto, ps.nombre, 'Sin producto') ORDER BY si.id SEPARATOR ' | ') AS productos,
+                           GROUP_CONCAT(si.fuente ORDER BY si.id SEPARATOR ' | ') AS productos_fuente,
+                           GROUP_CONCAT(COALESCE(si.costo_hectarea_snapshot, '') ORDER BY si.id SEPARATOR ' | ') AS productos_costo_ha,
+                           GROUP_CONCAT(COALESCE(si.total_producto_snapshot, '') ORDER BY si.id SEPARATOR ' | ') AS productos_total
+                    FROM drones_solicitud_item si
+                    LEFT JOIN dron_productos_stock ps
+                        ON ps.id = si.producto_id
+                    GROUP BY si.solicitud_id
+                ) it
+                    ON it.solicitud_id = s.id
+                LEFT JOIN (
+                    SELECT si.solicitud_id,
+                           GROUP_CONCAT(
+                               CONCAT_WS(' / ',
+                                   COALESCE(si.nombre_producto, ps.nombre, 'Sin producto'),
+                                   COALESCE(ir.principio_activo, ''),
+                                   COALESCE(ir.dosis, ''),
+                                   COALESCE(ir.unidad, ''),
+                                   COALESCE(ir.cant_prod_usado, ''),
+                                   COALESCE(ir.fecha_vencimiento, ''),
+                                   COALESCE(ir.orden_mezcla, ''),
+                                   COALESCE(ir.notas, '')
+                               )
+                               ORDER BY si.id, ir.id
+                               SEPARATOR ' | '
+                           ) AS recetas
+                    FROM drones_solicitud_item si
+                    LEFT JOIN dron_productos_stock ps
+                        ON ps.id = si.producto_id
+                    LEFT JOIN drones_solicitud_item_receta ir
+                        ON ir.solicitud_item_id = si.id
+                    GROUP BY si.solicitud_id
+                ) rec
+                    ON rec.solicitud_id = s.id
+                LEFT JOIN (
+                    SELECT p1.*
+                    FROM drones_solicitud_parametros p1
+                    INNER JOIN (
+                        SELECT solicitud_id, MAX(id) AS max_id
+                        FROM drones_solicitud_parametros
+                        GROUP BY solicitud_id
+                    ) p2
+                        ON p2.max_id = p1.id
+                ) prm
+                    ON prm.solicitud_id = s.id
+                LEFT JOIN (
+                    SELECT r1.*
+                    FROM drones_solicitud_Reporte r1
+                    INNER JOIN (
+                        SELECT solicitud_id, MAX(id) AS max_id
+                        FROM drones_solicitud_Reporte
+                        GROUP BY solicitud_id
+                    ) r2
+                        ON r2.max_id = r1.id
+                ) rep
+                    ON rep.solicitud_id = s.id
+                LEFT JOIN (
+                    SELECT solicitud_id,
+                           GROUP_CONCAT(CONCAT_WS(' / ', tipo, detalle, actor, created_at) ORDER BY id SEPARATOR ' | ') AS eventos
+                    FROM drones_solicitud_evento
+                    GROUP BY solicitud_id
+                ) ev
+                    ON ev.solicitud_id = s.id
+                ORDER BY s.created_at DESC, s.id DESC";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
+
+    public function obtenerTotalesDrones(array $rows): array
+    {
+        $total = count($rows);
+        $completadas = 0;
+        $canceladas = 0;
+
+        foreach ($rows as $row) {
+            $estado = strtolower((string) ($row['estado'] ?? ''));
+            if ($estado === 'completada') {
+                $completadas++;
+            }
+            if ($estado === 'cancelada') {
+                $canceladas++;
+            }
+        }
+
+        return [
+            'total_registros' => $total,
+            'completadas' => $completadas,
+            'pendientes' => max(0, $total - $completadas - $canceladas),
+            'canceladas' => $canceladas,
+        ];
+    }
+
     private function calcularCalificacionFacturacion(array $row): array
     {
         $promedioCalc = $this->resolvePromedioCallejon($row);
