@@ -722,7 +722,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             const cuit = document.getElementById('buscarCuit')?.value || '';
             const nombre = document.getElementById('buscarNombre')?.value || '';
             const idReal = document.getElementById('buscarIdReal')?.value.trim() || '';
-            const idRealParam = idReal.length >= 6 ? idReal : '';
+            const idRealExacto = /^\(.+\)$/.test(idReal);
+            const idRealParam = (idReal.length >= 6 || idRealExacto) ? idReal : '';
             const url = `/controllers/sve_altaUsuariosTablaController.php?cuit=${encodeURIComponent(cuit)}&nombre=${encodeURIComponent(nombre)}&id_real=${encodeURIComponent(idRealParam)}`;
 
             fetch(url)

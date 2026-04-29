@@ -56,6 +56,42 @@ function renderUsuario($usuario, $idReal): string
         </div>";
 }
 
+function parseFiltroExacto(string $value): array
+{
+    $value = trim($value);
+
+    if (preg_match('/^\((.*)\)$/u', $value, $matches)) {
+        return [
+            'value' => trim($matches[1]),
+            'exact' => true,
+        ];
+    }
+
+    return [
+        'value' => $value,
+        'exact' => false,
+    ];
+}
+
+function agregarFiltroTexto(array &$where, array &$params, string $column, string $rawValue): void
+{
+    $filter = parseFiltroExacto($rawValue);
+    $value = $filter['value'];
+
+    if ($value === '') {
+        return;
+    }
+
+    if ($filter['exact']) {
+        $where[] = "{$column} = ?";
+        $params[] = $value;
+        return;
+    }
+
+    $where[] = "{$column} LIKE ?";
+    $params[] = "%{$value}%";
+}
+
 $cuit = $_GET['cuit'] ?? '';
 $nombre = $_GET['nombre'] ?? '';
 $idReal = trim((string)($_GET['id_real'] ?? ''));
@@ -65,19 +101,11 @@ $params = [];
 
 $where[] = "COALESCE(u.archivado, 0) = 0";
 
-if ($cuit !== '') {
-    $where[] = "u.cuit LIKE ?";
-    $params[] = "%$cuit%";
-}
-
-if ($nombre !== '') {
-    $where[] = "i.nombre LIKE ?";
-    $params[] = "%$nombre%";
-}
+agregarFiltroTexto($where, $params, 'u.cuit', (string)$cuit);
+agregarFiltroTexto($where, $params, 'i.nombre', (string)$nombre);
 
 if (strlen($idReal) >= 6) {
-    $where[] = "u.id_real LIKE ?";
-    $params[] = "%$idReal%";
+    agregarFiltroTexto($where, $params, 'u.id_real', $idReal);
 }
 
 $sql = "
