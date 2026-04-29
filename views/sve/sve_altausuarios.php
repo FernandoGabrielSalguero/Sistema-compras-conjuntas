@@ -60,6 +60,32 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         .tamaño_modal {
             max-width: 800px;
         }
+
+        .contact-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            min-width: 150px;
+            font-size: 0.78rem;
+            line-height: 1.25;
+            color: #4b5563;
+        }
+
+        .contact-line {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            white-space: nowrap;
+        }
+
+        .contact-line .material-icons {
+            font-size: 0.95rem;
+            color: #5b21b6;
+        }
+
+        .contact-empty {
+            color: #9ca3af;
+        }
     </style>
 </head>
 
@@ -310,8 +336,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                     <th>ID Real</th>
                                     <th>Nombre</th>
                                     <th>Dirección</th>
-                                    <th>Teléfono</th>
-                                    <th>Correo</th>
+                                    <th>Contacto</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
