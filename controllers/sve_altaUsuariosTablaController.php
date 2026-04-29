@@ -56,6 +56,19 @@ function renderUsuario($usuario, $idReal): string
         </div>";
 }
 
+function renderRol($rol, $cooperativaNombre): string
+{
+    $rol = (string)($rol ?? '');
+    $html = "<div class='role-cell'><span class='role-name'>" . esc($rol) . "</span>";
+
+    if ($rol === 'productor') {
+        $coop = trim((string)($cooperativaNombre ?? ''));
+        $html .= "<span class='role-coop'><span class='material-icons'>business</span>" . esc($coop !== '' ? $coop : 'Sin cooperativa') . "</span>";
+    }
+
+    return $html . "</div>";
+}
+
 function parseFiltroExacto(string $value): array
 {
     $value = trim($value);
@@ -73,7 +86,7 @@ function parseFiltroExacto(string $value): array
     ];
 }
 
-function agregarFiltroTexto(array &$where, array &$params, string $column, string $rawValue): void
+function agregarFiltroTexto(array &$where, array &$params, string $column, string $rawValue, int $minChars = 4): void
 {
     $filter = parseFiltroExacto($rawValue);
     $value = $filter['value'];
@@ -88,6 +101,10 @@ function agregarFiltroTexto(array &$where, array &$params, string $column, strin
         return;
     }
 
+    if (mb_strlen($value, 'UTF-8') < $minChars) {
+        return;
+    }
+
     $where[] = "{$column} LIKE ?";
     $params[] = "%{$value}%";
 }
@@ -95,24 +112,35 @@ function agregarFiltroTexto(array &$where, array &$params, string $column, strin
 $cuit = $_GET['cuit'] ?? '';
 $nombre = $_GET['nombre'] ?? '';
 $idReal = trim((string)($_GET['id_real'] ?? ''));
+$format = $_GET['format'] ?? 'html';
 
 $where = [];
 $params = [];
 
 $where[] = "COALESCE(u.archivado, 0) = 0";
 
-agregarFiltroTexto($where, $params, 'u.cuit', (string)$cuit);
-agregarFiltroTexto($where, $params, 'i.nombre', (string)$nombre);
-
-if (strlen($idReal) >= 6) {
-    agregarFiltroTexto($where, $params, 'u.id_real', $idReal);
-}
+agregarFiltroTexto($where, $params, 'u.cuit', (string)$cuit, 4);
+agregarFiltroTexto($where, $params, 'i.nombre', (string)$nombre, 4);
+agregarFiltroTexto($where, $params, 'u.id_real', $idReal, 4);
 
 $sql = "
-    SELECT u.id, u.usuario, u.rol, u.permiso_ingreso, u.cuit, u.id_real,
-           i.nombre, i.direccion, i.telefono, i.correo
+    SELECT
+        u.id,
+        u.usuario,
+        u.rol,
+        u.permiso_ingreso,
+        u.cuit,
+        u.id_real,
+        i.nombre,
+        i.direccion,
+        i.telefono,
+        i.correo,
+        COALESCE(NULLIF(TRIM(coop_info.nombre), ''), NULLIF(TRIM(coop.razon_social), ''), NULLIF(TRIM(coop.usuario), ''), rpc.cooperativa_id_real) AS cooperativa_nombre
     FROM usuarios u
     LEFT JOIN usuarios_info i ON u.id = i.usuario_id
+    LEFT JOIN rel_productor_coop rpc ON rpc.productor_id_real = u.id_real
+    LEFT JOIN usuarios coop ON coop.id_real = rpc.cooperativa_id_real
+    LEFT JOIN usuarios_info coop_info ON coop_info.usuario_id = coop.id
 ";
 
 if (!empty($where)) {
@@ -126,31 +154,61 @@ try {
     $stmt->execute($params);
     $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (Exception $e) {
-    echo "<tr><td colspan='8'>❌ Error al obtener datos: " . esc($e->getMessage()) . "</td></tr>";
+    $errorHtml = "<tr><td colspan='8'>Error al obtener datos: " . esc($e->getMessage()) . "</td></tr>";
+
+    if ($format === 'json') {
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode([
+            'success' => false,
+            'html' => $errorHtml,
+            'count' => 0,
+        ], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    echo $errorHtml;
     exit;
 }
+
+$html = '';
 
 foreach ($usuarios as $usuario) {
     $permisoClass = $usuario['permiso_ingreso'] === 'Habilitado' ? 'success' : 'danger';
 
-    echo "<tr>
+    $html .= "<tr>
         <td>" . esc($usuario['id']) . "</td>
         <td>" . renderUsuario($usuario['usuario'], $usuario['id_real']) . "</td>
-        <td>" . esc($usuario['rol']) . "</td>
+        <td>" . renderRol($usuario['rol'], $usuario['cooperativa_nombre']) . "</td>
         <td><span class='badge {$permisoClass}'>" . esc($usuario['permiso_ingreso']) . "</span></td>
         <td>" . esc($usuario['cuit']) . "</td>
         <td>" . escTextoConSaltoCadaPalabras($usuario['nombre'], 2) . "</td>
         <td>" . renderContacto($usuario['telefono'], $usuario['correo']) . "</td>
         <td>
-            <button class='btn-icon' onclick='abrirModalEditar(" . $usuario['id'] . ")'>
+            <button class='btn-icon' onclick='abrirModalEditar(" . (int)$usuario['id'] . ")'>
                 <i class='material-icons'>edit</i>
             </button>
-            <button class='btn-icon' onclick='verContrasena(" . $usuario['id'] . ")'>
+            <button class='btn-icon' onclick='verContrasena(" . (int)$usuario['id'] . ")'>
                 <i class='material-icons'>vpn_key</i>
             </button>
-            <button class='btn-icon btn-delete-user' onclick='abrirModalEliminarUsuario(" . $usuario['id'] . ")' title='Archivar usuario'>
+            <button class='btn-icon btn-delete-user' onclick='abrirModalEliminarUsuario(" . (int)$usuario['id'] . ")' title='Archivar usuario'>
                 <i class='material-icons'>archive</i>
             </button>
         </td>
     </tr>";
 }
+
+if ($html === '') {
+    $html = "<tr><td colspan='8'>No se encontraron usuarios.</td></tr>";
+}
+
+if ($format === 'json') {
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode([
+        'success' => true,
+        'html' => $html,
+        'count' => count($usuarios),
+    ], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+echo $html;

@@ -204,6 +204,68 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         .btn-eliminar-def:hover {
             background: #b91c1c;
         }
+
+        .users-list-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .users-list-header h2 {
+            margin: 0;
+        }
+
+        .users-counter {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.28rem 0.65rem;
+            border-radius: 999px;
+            background: #f3f4f6;
+            color: #374151;
+            font-size: 0.82rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .users-counter .material-icons {
+            font-size: 1rem;
+            color: #5b21b6;
+        }
+
+        .role-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 0.22rem;
+            min-width: 110px;
+            line-height: 1.25;
+        }
+
+        .role-name {
+            font-size: 0.86rem;
+            color: #111827;
+        }
+
+        .role-coop {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            width: fit-content;
+            max-width: 150px;
+            padding: 0.12rem 0.4rem;
+            border-radius: 6px;
+            background: #eef2ff;
+            color: #4338ca;
+            font-size: 0.72rem;
+            font-weight: 700;
+            white-space: normal;
+        }
+
+        .role-coop .material-icons {
+            font-size: 0.8rem;
+        }
     </style>
 </head>
 
@@ -441,7 +503,13 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 <!-- Tabla -->
                 <div class="card">
-                    <h2>Listado de usuarios registrados</h2>
+                    <div class="users-list-header">
+                        <h2>Listado de usuarios registrados</h2>
+                        <span class="users-counter" id="usuariosCounter">
+                            <span class="material-icons">group</span>
+                            <span id="usuariosCounterText">0 usuarios</span>
+                        </span>
+                    </div>
                     <div class="table-container">
                         <table class="data-table">
                             <thead>
@@ -722,18 +790,27 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             const cuit = document.getElementById('buscarCuit')?.value || '';
             const nombre = document.getElementById('buscarNombre')?.value || '';
             const idReal = document.getElementById('buscarIdReal')?.value.trim() || '';
-            const idRealExacto = /^\(.+\)$/.test(idReal);
-            const idRealParam = (idReal.length >= 6 || idRealExacto) ? idReal : '';
-            const url = `/controllers/sve_altaUsuariosTablaController.php?cuit=${encodeURIComponent(cuit)}&nombre=${encodeURIComponent(nombre)}&id_real=${encodeURIComponent(idRealParam)}`;
+            const shouldSendFilter = (value) => {
+                const trimmed = (value || '').trim();
+                return trimmed.length >= 4 || /^\(.+\)$/.test(trimmed);
+            };
+            const cuitParam = shouldSendFilter(cuit) ? cuit.trim() : '';
+            const nombreParam = shouldSendFilter(nombre) ? nombre.trim() : '';
+            const idRealParam = shouldSendFilter(idReal) ? idReal : '';
+            const url = `/controllers/sve_altaUsuariosTablaController.php?format=json&cuit=${encodeURIComponent(cuitParam)}&nombre=${encodeURIComponent(nombreParam)}&id_real=${encodeURIComponent(idRealParam)}`;
 
             fetch(url)
-                .then(response => response.text())
-                .then(html => {
-                    document.getElementById('tablaUsuarios').innerHTML = html;
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('tablaUsuarios').innerHTML = data.html || "<tr><td colspan='8'>No se encontraron usuarios.</td></tr>";
+                    const count = Number(data.count || 0);
+                    const label = count === 1 ? '1 usuario' : `${count} usuarios`;
+                    document.getElementById('usuariosCounterText').textContent = label;
                 })
                 .catch(error => {
                     console.error('❌ Error al cargar usuarios:', error);
-                    document.getElementById('tablaUsuarios').innerHTML = "<tr><td colspan='10'>Error al cargar datos.</td></tr>";
+                    document.getElementById('tablaUsuarios').innerHTML = "<tr><td colspan='8'>Error al cargar datos.</td></tr>";
+                    document.getElementById('usuariosCounterText').textContent = '0 usuarios';
                 });
         }
 
