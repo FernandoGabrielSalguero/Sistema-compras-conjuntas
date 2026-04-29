@@ -10,6 +10,20 @@ function esc($value)
     return htmlspecialchars($value ?? '', ENT_QUOTES, 'UTF-8');
 }
 
+function escUsuarioConSalto($value)
+{
+    $words = preg_split('/\s+/', trim((string)($value ?? '')));
+
+    if (!$words || count($words) <= 3) {
+        return esc($value);
+    }
+
+    $firstLine = array_slice($words, 0, 3);
+    $secondLine = array_slice($words, 3);
+
+    return esc(implode(' ', $firstLine)) . '<br>' . esc(implode(' ', $secondLine));
+}
+
 $cuit = $_GET['cuit'] ?? '';
 $nombre = $_GET['nombre'] ?? '';
 $idReal = trim((string)($_GET['id_real'] ?? ''));
@@ -59,7 +73,7 @@ foreach ($usuarios as $usuario) {
 
     echo "<tr>
         <td>" . esc($usuario['id']) . "</td>
-        <td>" . esc($usuario['usuario']) . "</td>
+        <td>" . escUsuarioConSalto($usuario['usuario']) . "</td>
         <td>" . esc($usuario['rol']) . "</td>
         <td><span class='badge {$permisoClass}'>" . esc($usuario['permiso_ingreso']) . "</span></td>
         <td>" . esc($usuario['cuit']) . "</td>
