@@ -118,6 +118,9 @@ foreach ($usuarios as $usuario) {
             <button class='btn-icon' onclick='verContrasena(" . $usuario['id'] . ")'>
                 <i class='material-icons'>vpn_key</i>
             </button>
+            <button class='btn-icon btn-delete-user' onclick='abrirModalEliminarUsuario(" . $usuario['id'] . ")' title='Eliminar usuario'>
+                <i class='material-icons'>delete</i>
+            </button>
         </td>
     </tr>";
 }

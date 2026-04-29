@@ -131,6 +131,79 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             font-weight: 700;
             color: #4b5563;
         }
+
+        .btn-delete-user .material-icons {
+            color: #dc2626;
+        }
+
+        .delete-user-summary {
+            display: grid;
+            gap: 0.75rem;
+            margin: 1rem 0;
+        }
+
+        .delete-user-target {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 0.75rem;
+            background: #f9fafb;
+            font-size: 0.9rem;
+            line-height: 1.45;
+        }
+
+        .delete-impact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 0.6rem;
+        }
+
+        .delete-impact-group {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 0.7rem;
+            background: #fff;
+        }
+
+        .delete-impact-title {
+            margin: 0 0 0.45rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #374151;
+        }
+
+        .delete-impact-list {
+            display: grid;
+            gap: 0.28rem;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            font-size: 0.76rem;
+            color: #4b5563;
+        }
+
+        .delete-impact-list li {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.6rem;
+        }
+
+        .delete-warning {
+            border-left: 4px solid #dc2626;
+            padding: 0.65rem 0.75rem;
+            background: #fef2f2;
+            color: #7f1d1d;
+            font-size: 0.86rem;
+            line-height: 1.4;
+        }
+
+        .btn-eliminar-def {
+            background: #dc2626;
+            color: #fff;
+        }
+
+        .btn-eliminar-def:hover {
+            background: #b91c1c;
+        }
     </style>
 </head>
 
@@ -914,9 +987,197 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             initZonasFromCSV('');
         }
 
+        let usuarioEliminarID = null;
+
+        function escapeHtml(value) {
+            const div = document.createElement('div');
+            div.textContent = value ?? '';
+            return div.innerHTML;
+        }
+
+        function formatImpactLabel(key) {
+            const labels = {
+                usuarios_info: 'Ficha de usuario',
+                usuarios_pwd_backup: 'Backup contrasena',
+                info_productor: 'Info productor',
+                prod_colaboradores: 'Colaboradores',
+                prod_hijos: 'Hijos / familiares',
+                productores_contactos_alternos: 'Contactos alternos',
+                rel_productor_finca: 'Rel. productor-finca',
+                relevamiento_fincas: 'Relevamientos',
+                rel_productor_coop: 'Rel. productor-coop',
+                rel_coop_ingeniero: 'Rel. coop-ingeniero',
+                operativos_cooperativas_participacion: 'Operativos',
+                cooperativas_rangos: 'Rangos cooperativa',
+                cosechaMecanica_coop_contrato_firma: 'Firmas cosecha',
+                cosechaMecanica_coop_correo_log: 'Correos cosecha',
+                log_correos: 'Correos',
+                login_auditoria: 'Auditoria login',
+                drones_calendario_notas: 'Notas calendario',
+                drones_solicitud: 'Solicitudes',
+                drones_solicitud_Reporte: 'Reportes',
+                drones_solicitud_reporte_media: 'Medios reporte',
+                drones_solicitud_costos: 'Costos',
+                drones_solicitud_evento: 'Eventos',
+                drones_solicitud_item: 'Items',
+                drones_solicitud_item_receta: 'Recetas',
+                drones_solicitud_motivo: 'Motivos',
+                drones_solicitud_parametros: 'Parametros',
+                drones_solicitud_rango: 'Rangos',
+                prod_fincas: 'Fincas',
+                prod_finca_agua: 'Agua finca',
+                prod_finca_cultivos: 'Cultivos finca',
+                prod_finca_direccion: 'Direccion finca',
+                prod_finca_gerencia: 'Gerencia finca',
+                prod_finca_maquinaria: 'Maquinaria finca',
+                prod_finca_superficie: 'Superficie finca',
+                prod_cuartel: 'Cuarteles',
+                prod_cuartel_limitantes: 'Limitantes',
+                prod_cuartel_rendimientos: 'Rendimientos',
+                prod_cuartel_riesgos: 'Riesgos',
+                usuarios: 'Usuario principal'
+            };
+            return labels[key] || key;
+        }
+
+        function formatImpactGroupTitle(key) {
+            const labels = {
+                directos: 'Datos relacionados',
+                drones: 'Drones',
+                fincas_cuarteles: 'Fincas y cuarteles',
+                usuario: 'Alta de usuario'
+            };
+            return labels[key] || key;
+        }
+
+        function renderImpactSummary(impact) {
+            const user = impact.user || {};
+            const counts = impact.counts || {};
+            const target = document.getElementById('deleteUserTarget');
+            const list = document.getElementById('deleteImpactList');
+
+            target.innerHTML = `
+                <strong>${escapeHtml(user.nombre || user.usuario || 'Usuario')}</strong><br>
+                Usuario: ${escapeHtml(user.usuario || '-')}<br>
+                Rol: ${escapeHtml(user.rol || '-')}<br>
+                ID Real: ${escapeHtml(user.id_real || '-')}<br>
+                CUIT: ${escapeHtml(user.cuit || '-')}
+            `;
+
+            list.innerHTML = Object.entries(counts).map(([groupKey, groupCounts]) => {
+                const rows = Object.entries(groupCounts || {})
+                    .filter(([, value]) => Number(value) > 0)
+                    .map(([key, value]) => `<li><span>${escapeHtml(formatImpactLabel(key))}</span><strong>${Number(value)}</strong></li>`)
+                    .join('');
+
+                return `
+                    <div class="delete-impact-group">
+                        <p class="delete-impact-title">${escapeHtml(formatImpactGroupTitle(groupKey))}</p>
+                        <ul class="delete-impact-list">${rows || '<li><span>Sin registros</span><strong>0</strong></li>'}</ul>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function abrirModalEliminarUsuario(id) {
+            usuarioEliminarID = id;
+            const modal = document.getElementById('modalEliminarUsuario');
+            const target = document.getElementById('deleteUserTarget');
+            const list = document.getElementById('deleteImpactList');
+            const btn = document.getElementById('btnConfirmarEliminarUsuario');
+
+            target.textContent = 'Cargando usuario...';
+            list.innerHTML = '';
+            btn.disabled = true;
+            modal.classList.remove('hidden');
+
+            try {
+                const response = await fetch(`/controllers/sve_eliminarUsuarioController.php?action=preview&id=${encodeURIComponent(id)}`);
+                const result = await response.json();
+
+                if (!result.success) {
+                    cerrarModalEliminarUsuario();
+                    showAlert('error', result.message || 'No se pudo cargar el resumen de eliminacion.');
+                    return;
+                }
+
+                renderImpactSummary(result.impact);
+                btn.disabled = false;
+            } catch (error) {
+                console.error('Error al cargar impacto de eliminacion:', error);
+                cerrarModalEliminarUsuario();
+                showAlert('error', 'No se pudo cargar el resumen de eliminacion.');
+            }
+        }
+
+        function cerrarModalEliminarUsuario() {
+            usuarioEliminarID = null;
+            document.getElementById('modalEliminarUsuario').classList.add('hidden');
+            document.getElementById('btnConfirmarEliminarUsuario').disabled = false;
+        }
+
+        async function confirmarEliminarUsuario() {
+            if (!usuarioEliminarID) return;
+
+            const btn = document.getElementById('btnConfirmarEliminarUsuario');
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/controllers/sve_eliminarUsuarioController.php?action=delete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        id: usuarioEliminarID,
+                        confirm: true
+                    })
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert('success', result.message || 'Usuario eliminado correctamente.');
+                    cerrarModalEliminarUsuario();
+                    cargarUsuarios();
+                } else {
+                    showAlert('error', result.message || 'No se pudo eliminar el usuario.');
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                console.error('Error al eliminar usuario:', error);
+                showAlert('error', 'No se pudo eliminar el usuario.');
+                btn.disabled = false;
+            }
+        }
+
     </script>
 
     <!-- Modal para restablecer contraseña -->
+    <!-- Modal para eliminar usuario -->
+    <div id="modalEliminarUsuario" class="modal hidden">
+        <div class="modal-content tamaÃ±o_modal">
+            <h3>Eliminar usuario</h3>
+
+            <button class="btn-icon" onclick="cerrarModalEliminarUsuario()" style="position:absolute; top:10px; right:10px;">
+                <span class="material-icons">close</span>
+            </button>
+
+            <div class="delete-warning">
+                Esta accion elimina el usuario y los registros relacionados listados abajo. No se puede deshacer.
+            </div>
+
+            <div class="delete-user-summary">
+                <div class="delete-user-target" id="deleteUserTarget">Cargando usuario...</div>
+                <div class="delete-impact-grid" id="deleteImpactList"></div>
+            </div>
+
+            <div class="form-buttons">
+                <button class="btn btn-cancelar" type="button" onclick="cerrarModalEliminarUsuario()">Cancelar</button>
+                <button class="btn btn-eliminar-def" id="btnConfirmarEliminarUsuario" type="button" onclick="confirmarEliminarUsuario()">Eliminar definitivamente</button>
+            </div>
+        </div>
+    </div>
+
     <div id="modalResetPass" class="modal hidden">
         <div class="modal-content">
             <h3>Restablecer contraseña</h3>
