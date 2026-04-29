@@ -1045,7 +1045,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 directos: 'Datos relacionados',
                 drones: 'Drones',
                 fincas_cuarteles: 'Fincas y cuarteles',
-                usuario: 'Alta de usuario'
+                usuario: 'Usuario'
             };
             return labels[key] || key;
         }
@@ -1097,16 +1097,16 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 if (!result.success) {
                     cerrarModalEliminarUsuario();
-                    showAlert('error', result.message || 'No se pudo cargar el resumen de eliminacion.');
+                    showAlert('error', result.message || 'No se pudo cargar el resumen de archivado.');
                     return;
                 }
 
                 renderImpactSummary(result.impact);
                 btn.disabled = false;
             } catch (error) {
-                console.error('Error al cargar impacto de eliminacion:', error);
+                console.error('Error al cargar impacto de archivado:', error);
                 cerrarModalEliminarUsuario();
-                showAlert('error', 'No se pudo cargar el resumen de eliminacion.');
+                showAlert('error', 'No se pudo cargar el resumen de archivado.');
             }
         }
 
@@ -1123,7 +1123,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             btn.disabled = true;
 
             try {
-                const response = await fetch('/controllers/sve_eliminarUsuarioController.php?action=delete', {
+                const response = await fetch('/controllers/sve_eliminarUsuarioController.php?action=archive', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -1136,16 +1136,16 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 const result = await response.json();
 
                 if (result.success) {
-                    showAlert('success', result.message || 'Usuario eliminado correctamente.');
+                    showAlert('success', result.message || 'Usuario archivado correctamente.');
                     cerrarModalEliminarUsuario();
                     cargarUsuarios();
                 } else {
-                    showAlert('error', result.message || 'No se pudo eliminar el usuario.');
+                    showAlert('error', result.message || 'No se pudo archivar el usuario.');
                     btn.disabled = false;
                 }
             } catch (error) {
-                console.error('Error al eliminar usuario:', error);
-                showAlert('error', 'No se pudo eliminar el usuario.');
+                console.error('Error al archivar usuario:', error);
+                showAlert('error', 'No se pudo archivar el usuario.');
                 btn.disabled = false;
             }
         }
@@ -1153,17 +1153,17 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     </script>
 
     <!-- Modal para restablecer contraseña -->
-    <!-- Modal para eliminar usuario -->
+    <!-- Modal para archivar usuario -->
     <div id="modalEliminarUsuario" class="modal hidden">
         <div class="modal-content tamaÃ±o_modal">
-            <h3>Eliminar usuario</h3>
+            <h3>Archivar usuario</h3>
 
             <button class="btn-icon" onclick="cerrarModalEliminarUsuario()" style="position:absolute; top:10px; right:10px;">
                 <span class="material-icons">close</span>
             </button>
 
             <div class="delete-warning">
-                Esta accion elimina el usuario y los registros relacionados listados abajo. No se puede deshacer.
+                Esta accion no borra datos historicos. El usuario quedara archivado, deshabilitado y dejara de mostrarse en el listado principal.
             </div>
 
             <div class="delete-user-summary">
@@ -1173,7 +1173,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
             <div class="form-buttons">
                 <button class="btn btn-cancelar" type="button" onclick="cerrarModalEliminarUsuario()">Cancelar</button>
-                <button class="btn btn-eliminar-def" id="btnConfirmarEliminarUsuario" type="button" onclick="confirmarEliminarUsuario()">Eliminar definitivamente</button>
+                <button class="btn btn-eliminar-def" id="btnConfirmarEliminarUsuario" type="button" onclick="confirmarEliminarUsuario()">Archivar usuario</button>
             </div>
         </div>
     </div>

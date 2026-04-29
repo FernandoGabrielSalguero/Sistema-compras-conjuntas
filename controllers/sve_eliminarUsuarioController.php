@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 header('Content-Type: application/json; charset=utf-8');
+session_start();
 require_once __DIR__ . '/../config.php';
 
 function respond(array $payload, int $status = 200): void
@@ -71,29 +72,6 @@ function countIn(PDO $pdo, string $table, string $column, array $ids): int
     $stmt = $pdo->prepare("SELECT COUNT(*) FROM {$table} WHERE {$column} IN ({$placeholders})");
     $stmt->execute(array_values($ids));
     return (int)$stmt->fetchColumn();
-}
-
-function deleteWhere(PDO $pdo, string $table, string $where, array $params = []): int
-{
-    if (!tableExists($pdo, $table)) {
-        return 0;
-    }
-
-    $stmt = $pdo->prepare("DELETE FROM {$table} WHERE {$where}");
-    $stmt->execute($params);
-    return $stmt->rowCount();
-}
-
-function deleteIn(PDO $pdo, string $table, string $column, array $ids): int
-{
-    if (!$ids || !tableExists($pdo, $table) || !columnExists($pdo, $table, $column)) {
-        return 0;
-    }
-
-    $placeholders = implode(',', array_fill(0, count($ids), '?'));
-    $stmt = $pdo->prepare("DELETE FROM {$table} WHERE {$column} IN ({$placeholders})");
-    $stmt->execute(array_values($ids));
-    return $stmt->rowCount();
 }
 
 function getUser(PDO $pdo, int $id): ?array
@@ -209,54 +187,24 @@ function buildImpact(PDO $pdo, array $user): array
     ];
 }
 
-function deleteUserCascade(PDO $pdo, array $impact): int
+function archiveUser(PDO $pdo, array $user): void
 {
-    $user = $impact['user'];
     $id = (int)$user['id'];
-    $idReal = (string)$user['id_real'];
-    $ids = $impact['ids'];
-    $deleted = 0;
+    $archivedBy = $_SESSION['id_real'] ?? $_SESSION['usuario'] ?? null;
 
-    $deleted += deleteIn($pdo, 'drones_solicitud_reporte_media', 'reporte_id', $ids['reportes']);
-    $deleted += deleteIn($pdo, 'drones_solicitud_item_receta', 'solicitud_item_id', $ids['solicitud_items']);
-    foreach (['drones_solicitud_costos', 'drones_solicitud_evento', 'drones_solicitud_item', 'drones_solicitud_motivo', 'drones_solicitud_parametros', 'drones_solicitud_rango', 'drones_solicitud_Reporte'] as $table) {
-        $deleted += deleteIn($pdo, $table, 'solicitud_id', $ids['solicitudes']);
-    }
-    $deleted += deleteIn($pdo, 'drones_solicitud', 'id', $ids['solicitudes']);
-
-    foreach (['prod_cuartel_limitantes', 'prod_cuartel_rendimientos', 'prod_cuartel_riesgos'] as $table) {
-        $deleted += deleteIn($pdo, $table, 'cuartel_id', $ids['cuarteles']);
-    }
-    $deleted += deleteIn($pdo, 'prod_cuartel', 'id', $ids['cuarteles']);
-
-    $deleted += deleteWhere($pdo, 'relevamiento_fincas', 'productor_id = :id', ['id' => $id]);
-    $deleted += deleteWhere($pdo, 'rel_productor_finca', 'productor_id = ? OR productor_id_real = ?', [$id, $idReal]);
-
-    foreach (['prod_finca_agua', 'prod_finca_cultivos', 'prod_finca_direccion', 'prod_finca_gerencia', 'prod_finca_maquinaria', 'prod_finca_superficie'] as $table) {
-        $deleted += deleteIn($pdo, $table, 'finca_id', $ids['fincas']);
-    }
-    $deleted += deleteIn($pdo, 'prod_fincas', 'id', $ids['fincas']);
-
-    $deleted += deleteWhere($pdo, 'productores_contactos_alternos', 'productor_id = :id', ['id' => $id]);
-    $deleted += deleteWhere($pdo, 'prod_hijos', 'productor_id = :id', ['id' => $id]);
-    $deleted += deleteWhere($pdo, 'prod_colaboradores', 'productor_id = :id', ['id' => $id]);
-    $deleted += deleteWhere($pdo, 'info_productor', 'productor_id = :id', ['id' => $id]);
-
-    $deleted += deleteWhere($pdo, 'rel_productor_coop', 'productor_id_real = ? OR cooperativa_id_real = ?', [$idReal, $idReal]);
-    $deleted += deleteWhere($pdo, 'rel_coop_ingeniero', 'cooperativa_id_real = ? OR ingeniero_id_real = ?', [$idReal, $idReal]);
-    $deleted += deleteWhere($pdo, 'operativos_cooperativas_participacion', 'cooperativa_id_real = :id_real', ['id_real' => $idReal]);
-    $deleted += deleteWhere($pdo, 'cooperativas_rangos', 'cooperativa_id_real = :id_real', ['id_real' => $idReal]);
-    $deleted += deleteWhere($pdo, 'cosechaMecanica_coop_contrato_firma', 'cooperativa_id_real = :id_real', ['id_real' => $idReal]);
-    $deleted += deleteWhere($pdo, 'cosechaMecanica_coop_correo_log', 'cooperativa_id_real = :id_real', ['id_real' => $idReal]);
-    $deleted += deleteWhere($pdo, 'log_correos', 'cooperativa_id_real = :id_real', ['id_real' => $idReal]);
-    $deleted += deleteWhere($pdo, 'login_auditoria', 'usuario_id_real = :id_real', ['id_real' => $idReal]);
-    $deleted += deleteWhere($pdo, 'drones_calendario_notas', 'piloto_id = :id', ['id' => $id]);
-
-    $deleted += deleteWhere($pdo, 'usuarios_pwd_backup', 'id = :id', ['id' => $id]);
-    $deleted += deleteWhere($pdo, 'usuarios_info', 'usuario_id = :id', ['id' => $id]);
-    $deleted += deleteWhere($pdo, 'usuarios', 'id = :id', ['id' => $id]);
-
-    return $deleted;
+    $stmt = $pdo->prepare("
+        UPDATE usuarios
+        SET archivado = 1,
+            archivado_at = NOW(),
+            archivado_by_real = :archived_by,
+            permiso_ingreso = 'Deshabilitado'
+        WHERE id = :id
+        LIMIT 1
+    ");
+    $stmt->execute([
+        'archived_by' => $archivedBy,
+        'id' => $id,
+    ]);
 }
 
 try {
@@ -279,7 +227,7 @@ try {
         respond(['success' => true, 'impact' => $impact]);
     }
 
-    if ($method === 'POST' && $action === 'delete') {
+    if ($method === 'POST' && $action === 'archive') {
         $raw = file_get_contents('php://input');
         $data = json_decode($raw, true) ?: [];
         $id = isset($data['id']) ? (int)$data['id'] : 0;
@@ -294,16 +242,13 @@ try {
             respond(['success' => false, 'message' => 'Usuario no encontrado.'], 404);
         }
 
-        $impact = buildImpact($pdo, $user);
-
         $pdo->beginTransaction();
-        $deleted = deleteUserCascade($pdo, $impact);
+        archiveUser($pdo, $user);
         $pdo->commit();
 
         respond([
             'success' => true,
-            'message' => 'Usuario eliminado correctamente.',
-            'deleted_rows' => $deleted,
+            'message' => 'Usuario archivado correctamente.',
         ]);
     }
 

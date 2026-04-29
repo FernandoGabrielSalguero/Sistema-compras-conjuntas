@@ -63,6 +63,8 @@ $idReal = trim((string)($_GET['id_real'] ?? ''));
 $where = [];
 $params = [];
 
+$where[] = "COALESCE(u.archivado, 0) = 0";
+
 if ($cuit !== '') {
     $where[] = "u.cuit LIKE ?";
     $params[] = "%$cuit%";
@@ -118,8 +120,8 @@ foreach ($usuarios as $usuario) {
             <button class='btn-icon' onclick='verContrasena(" . $usuario['id'] . ")'>
                 <i class='material-icons'>vpn_key</i>
             </button>
-            <button class='btn-icon btn-delete-user' onclick='abrirModalEliminarUsuario(" . $usuario['id'] . ")' title='Eliminar usuario'>
-                <i class='material-icons'>delete</i>
+            <button class='btn-icon btn-delete-user' onclick='abrirModalEliminarUsuario(" . $usuario['id'] . ")' title='Archivar usuario'>
+                <i class='material-icons'>archive</i>
             </button>
         </td>
     </tr>";
