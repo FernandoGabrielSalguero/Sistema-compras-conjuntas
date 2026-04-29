@@ -10,7 +10,7 @@ function esc($value)
     return htmlspecialchars($value ?? '', ENT_QUOTES, 'UTF-8');
 }
 
-function escUsuarioConSalto($value)
+function escTextoConSaltoCadaDosPalabras($value)
 {
     $words = preg_split('/\s+/', trim((string)($value ?? '')));
 
@@ -75,12 +75,12 @@ foreach ($usuarios as $usuario) {
 
     echo "<tr>
         <td>" . esc($usuario['id']) . "</td>
-        <td>" . escUsuarioConSalto($usuario['usuario']) . "</td>
+        <td>" . escTextoConSaltoCadaDosPalabras($usuario['usuario']) . "</td>
         <td>" . esc($usuario['rol']) . "</td>
         <td><span class='badge {$permisoClass}'>" . esc($usuario['permiso_ingreso']) . "</span></td>
         <td>" . esc($usuario['cuit']) . "</td>
         <td>" . esc($usuario['id_real']) . "</td>
-        <td>" . esc($usuario['nombre']) . "</td>
+        <td>" . escTextoConSaltoCadaDosPalabras($usuario['nombre']) . "</td>
         <td>" . esc($usuario['direccion']) . "</td>
         <td>" . esc($usuario['telefono']) . "</td>
         <td>" . esc($usuario['correo']) . "</td>
