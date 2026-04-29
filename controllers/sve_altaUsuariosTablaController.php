@@ -51,8 +51,8 @@ function renderUsuario($usuario, $idReal): string
 {
     return "
         <div class='user-cell'>
-            <span class='user-name'>" . escTextoConSaltoCadaPalabras($usuario, 2) . "</span>
-            <span class='user-id'><span class='material-icons'>badge</span>" . esc($idReal) . "</span>
+            <span class='user-name'><span class='user-label'>Usuario</span>" . escTextoConSaltoCadaPalabras($usuario, 2) . "</span>
+            <span class='user-id'><span class='material-icons'>badge</span><span class='user-id-label'>ID Real</span>" . esc($idReal) . "</span>
         </div>";
 }
 

@@ -90,9 +90,19 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         .user-cell {
             display: flex;
             flex-direction: column;
-            gap: 0.2rem;
+            gap: 0.28rem;
             min-width: 130px;
             line-height: 1.25;
+        }
+
+        .user-cell .user-label {
+            display: block;
+            margin-bottom: 0.05rem;
+            font-size: 0.64rem;
+            font-weight: 700;
+            letter-spacing: 0;
+            text-transform: uppercase;
+            color: #6b7280;
         }
 
         .user-cell .user-name {
@@ -115,6 +125,11 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         .user-cell .user-id .material-icons {
             font-size: 0.82rem;
             color: #5b21b6;
+        }
+
+        .user-cell .user-id-label {
+            font-weight: 700;
+            color: #4b5563;
         }
     </style>
 </head>
