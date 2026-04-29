@@ -86,6 +86,36 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         .contact-empty {
             color: #9ca3af;
         }
+
+        .user-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+            min-width: 130px;
+            line-height: 1.25;
+        }
+
+        .user-cell .user-name {
+            font-size: 0.86rem;
+            color: #111827;
+        }
+
+        .user-cell .user-id {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            width: fit-content;
+            font-size: 0.74rem;
+            color: #6b7280;
+            background: #f3f4f6;
+            border-radius: 6px;
+            padding: 0.12rem 0.4rem;
+        }
+
+        .user-cell .user-id .material-icons {
+            font-size: 0.82rem;
+            color: #5b21b6;
+        }
     </style>
 </head>
 
@@ -333,7 +363,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                     <th>Rol</th>
                                     <th>Permiso</th>
                                     <th>CUIT</th>
-                                    <th>ID Real</th>
                                     <th>Nombre</th>
                                     <th>Contacto</th>
                                     <th>Acciones</th>

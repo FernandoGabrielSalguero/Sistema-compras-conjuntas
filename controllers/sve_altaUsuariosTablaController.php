@@ -47,6 +47,15 @@ function renderContacto($telefono, $correo): string
         </div>";
 }
 
+function renderUsuario($usuario, $idReal): string
+{
+    return "
+        <div class='user-cell'>
+            <span class='user-name'>" . escTextoConSaltoCadaPalabras($usuario, 2) . "</span>
+            <span class='user-id'><span class='material-icons'>badge</span>" . esc($idReal) . "</span>
+        </div>";
+}
+
 $cuit = $_GET['cuit'] ?? '';
 $nombre = $_GET['nombre'] ?? '';
 $idReal = trim((string)($_GET['id_real'] ?? ''));
@@ -87,7 +96,7 @@ try {
     $stmt->execute($params);
     $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (Exception $e) {
-    echo "<tr><td colspan='9'>❌ Error al obtener datos: " . esc($e->getMessage()) . "</td></tr>";
+    echo "<tr><td colspan='8'>❌ Error al obtener datos: " . esc($e->getMessage()) . "</td></tr>";
     exit;
 }
 
@@ -96,11 +105,10 @@ foreach ($usuarios as $usuario) {
 
     echo "<tr>
         <td>" . esc($usuario['id']) . "</td>
-        <td>" . escTextoConSaltoCadaPalabras($usuario['usuario'], 2) . "</td>
+        <td>" . renderUsuario($usuario['usuario'], $usuario['id_real']) . "</td>
         <td>" . esc($usuario['rol']) . "</td>
         <td><span class='badge {$permisoClass}'>" . esc($usuario['permiso_ingreso']) . "</span></td>
         <td>" . esc($usuario['cuit']) . "</td>
-        <td>" . esc($usuario['id_real']) . "</td>
         <td>" . escTextoConSaltoCadaPalabras($usuario['nombre'], 2) . "</td>
         <td>" . renderContacto($usuario['telefono'], $usuario['correo']) . "</td>
         <td>
