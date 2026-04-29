@@ -207,6 +207,17 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 </div>
                             </div>
 
+                            <!-- Cooperativa asociada -->
+                            <div class="input-group hidden" id="cooperativaAltaGroup">
+                                <label for="cooperativa_id_real">Cooperativa asociada</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">business</span>
+                                    <select id="cooperativa_id_real" name="cooperativa_id_real">
+                                        <option value="">Seleccionar cooperativa</option>
+                                    </select>
+                                </div>
+                            </div>
+
                             <!-- Permiso -->
                             <div class="input-group">
                                 <label for="permiso_ingreso">Permiso</label>
@@ -465,14 +476,66 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     </div>
 
     <script>
+        const ROLES_REQUIEREN_COOPERATIVA = ['productor', 'ingeniero'];
+
+        function requiereCooperativa(rol) {
+            return ROLES_REQUIEREN_COOPERATIVA.includes((rol || '').toLowerCase());
+        }
+
+        function actualizarSelectorCooperativa() {
+            const rol = document.getElementById('rol');
+            const group = document.getElementById('cooperativaAltaGroup');
+            const select = document.getElementById('cooperativa_id_real');
+            if (!rol || !group || !select) return;
+
+            const visible = requiereCooperativa(rol.value);
+            group.classList.toggle('hidden', !visible);
+            select.required = visible;
+
+            if (!visible) {
+                select.value = '';
+            }
+        }
+
+        async function cargarCooperativasAlta() {
+            const select = document.getElementById('cooperativa_id_real');
+            if (!select) return;
+
+            try {
+                const response = await fetch('/controllers/sve_altaUsuariosController.php?action=cooperativas');
+                const result = await response.json();
+
+                if (!result.success) {
+                    showAlert('error', result.message || 'No se pudieron cargar las cooperativas.');
+                    return;
+                }
+
+                select.innerHTML = '<option value="">Seleccionar cooperativa</option>';
+                result.data.forEach((coop) => {
+                    const option = document.createElement('option');
+                    option.value = coop.id_real;
+                    option.textContent = `${coop.nombre} (${coop.id_real})`;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error al cargar cooperativas:', error);
+                showAlert('error', 'No se pudieron cargar las cooperativas.');
+            }
+        }
+
         //   Script para cargar los datos usando AJAX a la base
         document.addEventListener('DOMContentLoaded', () => {
             const form = document.getElementById('formUsuario');
+            const rol = document.getElementById('rol');
 
             if (!form) {
                 console.error("⚠️ No se encontró el formulario con id='formUsuario'");
                 return;
             }
+
+            cargarCooperativasAlta();
+            actualizarSelectorCooperativa();
+            if (rol) rol.addEventListener('change', actualizarSelectorCooperativa);
 
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -488,6 +551,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                     if (result.success) {
                         form.reset();
+                        const rolAlta = document.getElementById('rol');
+                        if (rolAlta) rolAlta.value = 'productor';
+                        actualizarSelectorCooperativa();
                         showAlert('success', result.message); // ✅ alerta verde
                         cargarUsuarios(); // 👈 actualiza la tabla
                     } else {

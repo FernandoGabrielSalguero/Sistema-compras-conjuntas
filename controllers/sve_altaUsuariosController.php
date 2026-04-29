@@ -4,6 +4,12 @@ session_start();
 
 require_once __DIR__ . '/../models/sve_altaUsuariosModel.php';
 
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && ($_GET['action'] ?? '') === 'cooperativas') {
+    $userModel = new UserModel($pdo);
+    echo json_encode($userModel->listarCooperativas());
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $userModel = new UserModel($pdo);
 
@@ -29,6 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'permiso_ingreso' => $_POST['permiso_ingreso'] ?? '',
         'cuit' => $_POST['cuit'] ?? '',
         'id_real' => $_POST['id_real'] ?? '',
+        'cooperativa_id_real' => $_POST['cooperativa_id_real'] ?? '',
     ];
 
     $result = $userModel->crearUsuario($data);
