@@ -10,15 +10,16 @@ function esc($value)
     return htmlspecialchars($value ?? '', ENT_QUOTES, 'UTF-8');
 }
 
-function escTextoConSaltoCadaDosPalabras($value)
+function escTextoConSaltoCadaPalabras($value, int $wordsPerLine = 2)
 {
     $words = preg_split('/\s+/', trim((string)($value ?? '')));
+    $wordsPerLine = max(1, $wordsPerLine);
 
-    if (!$words || count($words) <= 2) {
+    if (!$words || count($words) <= $wordsPerLine) {
         return esc($value);
     }
 
-    $lines = array_chunk($words, 2);
+    $lines = array_chunk($words, $wordsPerLine);
     $escapedLines = array_map(function ($line) {
         return esc(implode(' ', $line));
     }, $lines);
@@ -75,13 +76,13 @@ foreach ($usuarios as $usuario) {
 
     echo "<tr>
         <td>" . esc($usuario['id']) . "</td>
-        <td>" . escTextoConSaltoCadaDosPalabras($usuario['usuario']) . "</td>
+        <td>" . escTextoConSaltoCadaPalabras($usuario['usuario'], 2) . "</td>
         <td>" . esc($usuario['rol']) . "</td>
         <td><span class='badge {$permisoClass}'>" . esc($usuario['permiso_ingreso']) . "</span></td>
         <td>" . esc($usuario['cuit']) . "</td>
         <td>" . esc($usuario['id_real']) . "</td>
-        <td>" . escTextoConSaltoCadaDosPalabras($usuario['nombre']) . "</td>
-        <td>" . esc($usuario['direccion']) . "</td>
+        <td>" . escTextoConSaltoCadaPalabras($usuario['nombre'], 2) . "</td>
+        <td>" . escTextoConSaltoCadaPalabras($usuario['direccion'], 4) . "</td>
         <td>" . esc($usuario['telefono']) . "</td>
         <td>" . esc($usuario['correo']) . "</td>
         <td>
