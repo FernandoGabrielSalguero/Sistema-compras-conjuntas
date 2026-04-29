@@ -262,7 +262,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     <h2>Busca usuarios</h2>
 
                     <form class="form-modern">
-                        <div class="form-grid grid-2">
+                        <div class="form-grid grid-3">
                             <!-- Buscar por CUIT -->
                             <div class="input-group">
                                 <label for="buscarCuit">Podes buscar por CUIT</label>
@@ -278,6 +278,15 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <div class="input-icon">
                                     <span class="material-icons">person</span>
                                     <input type="text" id="buscarNombre" name="buscarNombre" placeholder="Ej: Juan Pérez">
+                                </div>
+                            </div>
+
+                            <!-- Buscar por ID Real -->
+                            <div class="input-group">
+                                <label for="buscarIdReal">Podes buscar por ID Real</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">badge</span>
+                                    <input type="text" id="buscarIdReal" name="buscarIdReal" placeholder="Ej: 123456">
                                 </div>
                             </div>
                         </div>
@@ -570,7 +579,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         // funcion para cargar la tabla de usuarios
         function cargarUsuarios() {
             const cuit = document.getElementById('buscarCuit')?.value || '';
-            const url = `/controllers/sve_altaUsuariosTablaController.php?cuit=${encodeURIComponent(cuit)}`;
+            const nombre = document.getElementById('buscarNombre')?.value || '';
+            const idReal = document.getElementById('buscarIdReal')?.value.trim() || '';
+            const idRealParam = idReal.length >= 6 ? idReal : '';
+            const url = `/controllers/sve_altaUsuariosTablaController.php?cuit=${encodeURIComponent(cuit)}&nombre=${encodeURIComponent(nombre)}&id_real=${encodeURIComponent(idRealParam)}`;
 
             fetch(url)
                 .then(response => response.text())
@@ -589,6 +601,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
             const bc = document.getElementById('buscarCuit');
             if (bc) bc.addEventListener('input', cargarUsuarios);
+            const bn = document.getElementById('buscarNombre');
+            if (bn) bn.addEventListener('input', cargarUsuarios);
+            const bir = document.getElementById('buscarIdReal');
+            if (bir) bir.addEventListener('input', cargarUsuarios);
         });
 
 
@@ -830,21 +846,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             initZonasFromCSV('');
         }
 
-        // buscar tipeando nombre / cuit
-        document.getElementById('buscarCuit').addEventListener('input', cargarUsuarios);
-        document.getElementById('buscarNombre').addEventListener('input', cargarUsuarios);
-
-        function cargarUsuarios() {
-            const cuit = document.getElementById('buscarCuit').value.trim();
-            const nombre = document.getElementById('buscarNombre').value.trim();
-
-            fetch(`/controllers/sve_altaUsuariosTablaController.php?cuit=${encodeURIComponent(cuit)}&nombre=${encodeURIComponent(nombre)}`)
-                .then(res => res.text())
-                .then(html => {
-                    document.getElementById('tablaUsuarios').innerHTML = html;
-                })
-                .catch(err => console.error('❌ Error al cargar usuarios:', err));
-        }
     </script>
 
     <!-- Modal para restablecer contraseña -->

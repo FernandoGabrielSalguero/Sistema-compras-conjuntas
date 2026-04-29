@@ -12,6 +12,7 @@ function esc($value)
 
 $cuit = $_GET['cuit'] ?? '';
 $nombre = $_GET['nombre'] ?? '';
+$idReal = trim((string)($_GET['id_real'] ?? ''));
 
 $where = [];
 $params = [];
@@ -24,6 +25,11 @@ if ($cuit !== '') {
 if ($nombre !== '') {
     $where[] = "i.nombre LIKE ?";
     $params[] = "%$nombre%";
+}
+
+if (strlen($idReal) >= 6) {
+    $where[] = "u.id_real LIKE ?";
+    $params[] = "%$idReal%";
 }
 
 $sql = "
