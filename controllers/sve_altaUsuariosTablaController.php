@@ -14,14 +14,16 @@ function escUsuarioConSalto($value)
 {
     $words = preg_split('/\s+/', trim((string)($value ?? '')));
 
-    if (!$words || count($words) <= 3) {
+    if (!$words || count($words) <= 2) {
         return esc($value);
     }
 
-    $firstLine = array_slice($words, 0, 3);
-    $secondLine = array_slice($words, 3);
+    $lines = array_chunk($words, 2);
+    $escapedLines = array_map(function ($line) {
+        return esc(implode(' ', $line));
+    }, $lines);
 
-    return esc(implode(' ', $firstLine)) . '<br>' . esc(implode(' ', $secondLine));
+    return implode('<br>', $escapedLines);
 }
 
 $cuit = $_GET['cuit'] ?? '';
