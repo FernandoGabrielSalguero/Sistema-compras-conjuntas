@@ -87,7 +87,7 @@ try {
     $stmt->execute($params);
     $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (Exception $e) {
-    echo "<tr><td colspan='10'>❌ Error al obtener datos: " . esc($e->getMessage()) . "</td></tr>";
+    echo "<tr><td colspan='9'>❌ Error al obtener datos: " . esc($e->getMessage()) . "</td></tr>";
     exit;
 }
 
@@ -102,7 +102,6 @@ foreach ($usuarios as $usuario) {
         <td>" . esc($usuario['cuit']) . "</td>
         <td>" . esc($usuario['id_real']) . "</td>
         <td>" . escTextoConSaltoCadaPalabras($usuario['nombre'], 2) . "</td>
-        <td>" . escTextoConSaltoCadaPalabras($usuario['direccion'], 4) . "</td>
         <td>" . renderContacto($usuario['telefono'], $usuario['correo']) . "</td>
         <td>
             <button class='btn-icon' onclick='abrirModalEditar(" . $usuario['id'] . ")'>

@@ -335,7 +335,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                     <th>CUIT</th>
                                     <th>ID Real</th>
                                     <th>Nombre</th>
-                                    <th>Dirección</th>
                                     <th>Contacto</th>
                                     <th>Acciones</th>
                                 </tr>
