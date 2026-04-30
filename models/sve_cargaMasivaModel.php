@@ -233,9 +233,7 @@ final class CargaMasivaModel
 
             $qSelectCuartel = $this->pdo->prepare(
                 'SELECT id FROM prod_cuartel
-                 WHERE cooperativa_id_real = :cooperativa_id_real
-                   AND id_responsable_real = :id_responsable_real
-                   AND codigo_finca = :codigo_finca
+                 WHERE finca_id = :finca_id
                    AND codigo_cuartel = :codigo_cuartel
                  LIMIT 1'
             );
@@ -256,6 +254,8 @@ final class CargaMasivaModel
             $qUpdateCuartel = $this->pdo->prepare(
                 'UPDATE prod_cuartel
                  SET id_responsable_real = :id_responsable_real,
+                     cooperativa_id_real = :cooperativa_id_real,
+                     codigo_finca = :codigo_finca,
                      nombre_finca = :nombre_finca,
                      variedad = :variedad,
                      numero_inv = :numero_inv,
@@ -480,9 +480,7 @@ final class CargaMasivaModel
                 }
 
                 $qSelectCuartel->execute([
-                    ':cooperativa_id_real' => $cooperativaIdReal,
-                    ':id_responsable_real' => $u['id_real'],
-                    ':codigo_finca' => $r['codigo_finca'],
+                    ':finca_id' => $fincaId,
                     ':codigo_cuartel' => $r['codigo_cuartel'],
                 ]);
                 $cuartelId = $qSelectCuartel->fetchColumn();
@@ -511,6 +509,8 @@ final class CargaMasivaModel
                     $qUpdateCuartel->execute([
                         ':id' => $cuartelId,
                         ':id_responsable_real' => $u['id_real'],
+                        ':cooperativa_id_real' => $cooperativaIdReal,
+                        ':codigo_finca' => $r['codigo_finca'],
                         ':nombre_finca' => $r['nombre_finca'],
                         ':variedad' => $r['variedad'],
                         ':numero_inv' => $r['numero_inv'],
@@ -1090,7 +1090,10 @@ final class CargaMasivaModel
             'longitud' => $row['longitud'],
         ];
 
-        $beforeCuartel = $this->fetchCuartelByKeys($cooperativaIdReal, $targetIdReal, $row['codigo_finca'], $row['codigo_cuartel']);
+        $beforeCuartel = null;
+        if ($beforeFinca && isset($beforeFinca['id'])) {
+            $beforeCuartel = $this->fetchCuartelByFincaAndCodigo((int)$beforeFinca['id'], $row['codigo_cuartel']);
+        }
         $afterCuartel = [
             'id_responsable_real' => $targetIdReal,
             'cooperativa_id_real' => $cooperativaIdReal,
@@ -1346,6 +1349,25 @@ final class CargaMasivaModel
             ':cooperativa_id_real' => $cooperativaIdReal,
             ':id_responsable_real' => $idResponsableReal,
             ':codigo_finca' => $codigoFinca,
+            ':codigo_cuartel' => $codigoCuartel,
+        ]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ?: null;
+    }
+
+    private function fetchCuartelByFincaAndCodigo(int $fincaId, string $codigoCuartel): ?array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT id, id_responsable_real, cooperativa_id_real, codigo_finca, nombre_finca, codigo_cuartel, variedad, numero_inv,
+                    sistema_conduccion, superficie_ha, porcentaje_cepas_produccion, forma_cosecha_actual,
+                    porcentaje_malla_buen_estado, edad_promedio_encepado_anios, estado_estructura_sistema, labores_mecanizables
+             FROM prod_cuartel
+             WHERE finca_id = :finca_id
+               AND codigo_cuartel = :codigo_cuartel
+             LIMIT 1'
+        );
+        $stmt->execute([
+            ':finca_id' => $fincaId,
             ':codigo_cuartel' => $codigoCuartel,
         ]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
