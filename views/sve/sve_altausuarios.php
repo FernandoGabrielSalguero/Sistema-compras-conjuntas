@@ -785,18 +785,39 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             });
         });
 
+        const FILTRO_USUARIOS_MIN_CHARS = 4;
+
+        const shouldSendUsuariosFilter = (value) => {
+            const trimmed = (value || '').trim();
+            return trimmed.length >= FILTRO_USUARIOS_MIN_CHARS || /^\(.+\)$/.test(trimmed);
+        };
+
+        const hasShortUsuariosFilter = (...values) => {
+            return values.some((value) => {
+                const trimmed = (value || '').trim();
+                return trimmed.length > 0 && !shouldSendUsuariosFilter(trimmed);
+            });
+        };
+
+        function mostrarMinimoCaracteresFiltro() {
+            document.getElementById('tablaUsuarios').innerHTML = "<tr><td colspan='8'>Debe colocar al menos 4 caracteres por favor.</td></tr>";
+            document.getElementById('usuariosCounterText').textContent = '0 usuarios';
+        }
+
         // funcion para cargar la tabla de usuarios
         function cargarUsuarios() {
             const cuit = document.getElementById('buscarCuit')?.value || '';
             const nombre = document.getElementById('buscarNombre')?.value || '';
             const idReal = document.getElementById('buscarIdReal')?.value.trim() || '';
-            const shouldSendFilter = (value) => {
-                const trimmed = (value || '').trim();
-                return trimmed.length >= 4 || /^\(.+\)$/.test(trimmed);
-            };
-            const cuitParam = shouldSendFilter(cuit) ? cuit.trim() : '';
-            const nombreParam = shouldSendFilter(nombre) ? nombre.trim() : '';
-            const idRealParam = shouldSendFilter(idReal) ? idReal : '';
+
+            if (hasShortUsuariosFilter(cuit, nombre, idReal)) {
+                mostrarMinimoCaracteresFiltro();
+                return;
+            }
+
+            const cuitParam = shouldSendUsuariosFilter(cuit) ? cuit.trim() : '';
+            const nombreParam = shouldSendUsuariosFilter(nombre) ? nombre.trim() : '';
+            const idRealParam = shouldSendUsuariosFilter(idReal) ? idReal : '';
             const url = `/controllers/sve_altaUsuariosTablaController.php?format=json&cuit=${encodeURIComponent(cuitParam)}&nombre=${encodeURIComponent(nombreParam)}&id_real=${encodeURIComponent(idRealParam)}`;
 
             fetch(url)
