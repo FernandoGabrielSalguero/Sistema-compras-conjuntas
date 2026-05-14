@@ -129,11 +129,48 @@ try {
         ]);
     }
 
+    if ($action === 'relevamiento_campos_disponibles') {
+        jsonResponse(200, [
+            'ok' => true,
+            'data' => $model->listarCamposOperativoRelevamiento(),
+        ]);
+    }
+
+    if ($action === 'relevamiento_operativo_create') {
+        $nombre = trim((string)($_POST['nombre'] ?? ''));
+        $fechaInicio = trim((string)($_POST['fecha_inicio'] ?? ''));
+        $fechaFin = trim((string)($_POST['fecha_fin'] ?? ''));
+        $estado = trim((string)($_POST['estado'] ?? 'borrador'));
+        $camposRaw = (string)($_POST['campos'] ?? '[]');
+        $campos = json_decode($camposRaw, true);
+
+        if (!is_array($campos)) {
+            jsonResponse(422, [
+                'ok' => false,
+                'error' => 'Formato de campos invalido',
+            ]);
+        }
+
+        $createdByReal = isset($_SESSION['id_real']) ? (string)$_SESSION['id_real'] : null;
+        $row = $model->crearOperativoRelevamiento($nombre, $fechaInicio, $fechaFin, $estado, $campos, $createdByReal);
+
+        jsonResponse(200, [
+            'ok' => true,
+            'data' => $row,
+        ]);
+    }
+
     jsonResponse(400, [
         'ok' => false,
         'error' => 'Accion no soportada',
     ]);
 } catch (Throwable $e) {
+    if ($e instanceof InvalidArgumentException) {
+        jsonResponse(422, [
+            'ok' => false,
+            'error' => $e->getMessage(),
+        ]);
+    }
     if ((int)($e->getCode()) === 23000) {
         jsonResponse(200, [
             'ok' => false,

@@ -261,6 +261,83 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
         .variedades-msg.error {
             color: #b91c1c;
         }
+
+        .sve-modal-content.operativo-modal-content {
+            width: min(960px, 100%);
+        }
+
+        .operativo-form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 0.9rem;
+        }
+
+        .operativo-fields-head {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.6rem;
+            margin: 0.3rem 0 0.75rem;
+        }
+
+        .operativo-fields-actions {
+            display: inline-flex;
+            flex-wrap: wrap;
+            gap: 0.45rem;
+        }
+
+        .operativo-fields-wrap {
+            display: grid;
+            gap: 0.75rem;
+            max-height: 360px;
+            overflow: auto;
+            padding-right: 0.25rem;
+        }
+
+        .operativo-field-group {
+            border: 1px solid rgba(15, 23, 42, 0.12);
+            border-radius: 0.55rem;
+            background: #fff;
+            padding: 0.7rem;
+        }
+
+        .operativo-field-group h4 {
+            margin: 0 0 0.55rem;
+            font-size: 0.95rem;
+        }
+
+        .operativo-field-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 0.45rem 0.7rem;
+        }
+
+        .operativo-field-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.45rem;
+            font-size: 0.88rem;
+        }
+
+        .operativo-field-item input {
+            margin-top: 0.15rem;
+        }
+
+        .operativo-msg {
+            min-height: 20px;
+            font-size: 0.84rem;
+            margin-top: 0.55rem;
+        }
+
+        .operativo-msg.ok {
+            color: #166534;
+        }
+
+        .operativo-msg.error {
+            color: #b91c1c;
+        }
     </style>
 </head>
 
@@ -525,16 +602,66 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
     </div>
 
     <div class="sve-modal" id="modalNuevoOperativoRelevamiento" aria-hidden="true" inert>
-        <div class="sve-modal-content" role="dialog" aria-modal="true" aria-labelledby="modalNuevoOperativoRelevamientoTitulo">
+        <div class="sve-modal-content operativo-modal-content" role="dialog" aria-modal="true" aria-labelledby="modalNuevoOperativoRelevamientoTitulo">
             <div class="sve-modal-header">
                 <h3 id="modalNuevoOperativoRelevamientoTitulo">Nuevo operativo de relevamiento</h3>
                 <button type="button" class="sve-modal-close" id="btnCerrarModalNuevoOperativoX" aria-label="Cerrar">
                     <span class="material-icons">close</span>
                 </button>
             </div>
-            <div class="sve-modal-body"></div>
+            <div class="sve-modal-body">
+                <form id="formNuevoOperativoRelevamiento">
+                    <div class="operativo-form-grid">
+                        <div class="input-group">
+                            <label for="operativoNombre">Nombre</label>
+                            <div class="input-icon">
+                                <span class="material-icons">edit_note</span>
+                                <input type="text" id="operativoNombre" maxlength="255" required />
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="operativoFechaInicio">Fecha de inicio</label>
+                            <div class="input-icon">
+                                <span class="material-icons">event</span>
+                                <input type="date" id="operativoFechaInicio" required />
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="operativoFechaFin">Fecha de finalizacion</label>
+                            <div class="input-icon">
+                                <span class="material-icons">event_available</span>
+                                <input type="date" id="operativoFechaFin" required />
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="operativoEstado">Estado</label>
+                            <div class="input-icon">
+                                <span class="material-icons">toggle_on</span>
+                                <select id="operativoEstado">
+                                    <option value="borrador">Borrador</option>
+                                    <option value="abierto">Abierto</option>
+                                    <option value="cerrado">Cerrado</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="operativo-fields-head">
+                        <h4 class="variedades-section-title">Campos a completar</h4>
+                        <div class="operativo-fields-actions">
+                            <button type="button" class="btn-mini" id="btnSeleccionarTodosCampos">Seleccionar todos</button>
+                            <button type="button" class="btn-mini" id="btnLimpiarCamposOperativo">Limpiar</button>
+                        </div>
+                    </div>
+                    <div id="operativoCamposWrap" class="operativo-fields-wrap">
+                        <div>Cargando campos...</div>
+                    </div>
+                    <div id="msgNuevoOperativo" class="operativo-msg"></div>
+                </form>
+            </div>
             <div class="sve-modal-footer">
                 <button type="button" class="btn btn-cancelar" id="btnCerrarModalNuevoOperativo">Cerrar</button>
+                <button type="button" class="btn btn-aceptar" id="btnGuardarNuevoOperativo">Guardar operativo</button>
             </div>
         </div>
     </div>
@@ -570,8 +697,18 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
                 btnCerrarModalCodigos: $('btnCerrarModalCodigos'),
                 btnCerrarModalNuevoOperativoX: $('btnCerrarModalNuevoOperativoX'),
                 btnCerrarModalNuevoOperativo: $('btnCerrarModalNuevoOperativo'),
+                btnGuardarNuevoOperativo: $('btnGuardarNuevoOperativo'),
+                btnSeleccionarTodosCampos: $('btnSeleccionarTodosCampos'),
+                btnLimpiarCamposOperativo: $('btnLimpiarCamposOperativo'),
                 btnGuardarModalCodigos: $('btnGuardarModalCodigos'),
                 formVariedad: $('formVariedad'),
+                formNuevoOperativoRelevamiento: $('formNuevoOperativoRelevamiento'),
+                operativoNombre: $('operativoNombre'),
+                operativoFechaInicio: $('operativoFechaInicio'),
+                operativoFechaFin: $('operativoFechaFin'),
+                operativoEstado: $('operativoEstado'),
+                operativoCamposWrap: $('operativoCamposWrap'),
+                msgNuevoOperativo: $('msgNuevoOperativo'),
                 variedadId: $('variedadId'),
                 codigoVariedad: $('codigoVariedad'),
                 nombreVariedad: $('nombreVariedad'),
@@ -579,6 +716,7 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
                 tablaVariedadesBody: $('tablaVariedadesBody'),
                 msgVariedades: $('msgVariedades')
             };
+            let camposOperativo = null;
 
             function escapeHtml(text) {
                 return String(text ?? '')
@@ -815,8 +953,10 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
                 ui.modalNuevoOperativoRelevamiento.removeAttribute('inert');
                 ui.modalNuevoOperativoRelevamiento.classList.add('active');
                 ui.modalNuevoOperativoRelevamiento.setAttribute('aria-hidden', 'false');
+                limpiarFormNuevoOperativo();
+                cargarCamposOperativo();
                 setTimeout(() => {
-                    ui.btnCerrarModalNuevoOperativo.focus();
+                    ui.operativoNombre.focus();
                 }, 0);
             }
 
@@ -831,6 +971,114 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
                 ui.modalNuevoOperativoRelevamiento.classList.remove('active');
                 ui.modalNuevoOperativoRelevamiento.setAttribute('aria-hidden', 'true');
                 ui.modalNuevoOperativoRelevamiento.setAttribute('inert', '');
+            }
+
+            function setMsgNuevoOperativo(msg, type) {
+                ui.msgNuevoOperativo.className = 'operativo-msg' + (type ? (' ' + type) : '');
+                ui.msgNuevoOperativo.textContent = msg || '';
+            }
+
+            function limpiarFormNuevoOperativo() {
+                ui.formNuevoOperativoRelevamiento.reset();
+                ui.operativoEstado.value = 'borrador';
+                setMsgNuevoOperativo('', '');
+                ui.btnGuardarNuevoOperativo.disabled = false;
+                ui.btnGuardarNuevoOperativo.textContent = 'Guardar operativo';
+            }
+
+            function renderCamposOperativo(rows) {
+                if (!Array.isArray(rows) || rows.length === 0) {
+                    ui.operativoCamposWrap.innerHTML = '<div>No hay campos configurables.</div>';
+                    return;
+                }
+
+                const groups = rows.reduce((acc, field) => {
+                    const group = field.grupo || 'Otros';
+                    if (!acc[group]) acc[group] = [];
+                    acc[group].push(field);
+                    return acc;
+                }, {});
+
+                ui.operativoCamposWrap.innerHTML = Object.keys(groups).map((group) => `
+                    <section class="operativo-field-group">
+                        <h4>${escapeHtml(group)}</h4>
+                        <div class="operativo-field-list">
+                            ${groups[group].map((field) => `
+                                <label class="operativo-field-item">
+                                    <input type="checkbox" name="operativo_campo" value="${escapeHtml(field.key)}">
+                                    <span>${escapeHtml(field.etiqueta)} <small>(${escapeHtml(field.alcance)})</small></span>
+                                </label>
+                            `).join('')}
+                        </div>
+                    </section>
+                `).join('');
+            }
+
+            async function cargarCamposOperativo() {
+                if (Array.isArray(camposOperativo)) {
+                    renderCamposOperativo(camposOperativo);
+                    return;
+                }
+
+                ui.operativoCamposWrap.innerHTML = '<div>Cargando campos...</div>';
+                try {
+                    const payload = await getJson({ action: 'relevamiento_campos_disponibles' });
+                    camposOperativo = Array.isArray(payload.data) ? payload.data : [];
+                    renderCamposOperativo(camposOperativo);
+                } catch (error) {
+                    ui.operativoCamposWrap.innerHTML = `<div>${escapeHtml(error.message)}</div>`;
+                }
+            }
+
+            function getCamposOperativoSeleccionados() {
+                return Array.from(ui.operativoCamposWrap.querySelectorAll('input[name="operativo_campo"]:checked'))
+                    .map((input) => input.value);
+            }
+
+            async function guardarNuevoOperativoRelevamiento() {
+                const nombre = ui.operativoNombre.value.trim();
+                const fechaInicio = ui.operativoFechaInicio.value.trim();
+                const fechaFin = ui.operativoFechaFin.value.trim();
+                const estado = ui.operativoEstado.value;
+                const campos = getCamposOperativoSeleccionados();
+
+                if (!nombre || !fechaInicio || !fechaFin) {
+                    setMsgNuevoOperativo('Completa nombre, fecha de inicio y fecha de finalizacion.', 'error');
+                    return;
+                }
+
+                if (fechaFin < fechaInicio) {
+                    setMsgNuevoOperativo('La fecha de finalizacion no puede ser anterior a la fecha de inicio.', 'error');
+                    return;
+                }
+
+                if (campos.length === 0) {
+                    setMsgNuevoOperativo('Selecciona al menos un campo para el operativo.', 'error');
+                    return;
+                }
+
+                ui.btnGuardarNuevoOperativo.disabled = true;
+                ui.btnGuardarNuevoOperativo.textContent = 'Guardando...';
+                setMsgNuevoOperativo('', '');
+
+                try {
+                    const payload = await postJson({
+                        action: 'relevamiento_operativo_create',
+                        nombre,
+                        fecha_inicio: fechaInicio,
+                        fecha_fin: fechaFin,
+                        estado,
+                        campos: JSON.stringify(campos)
+                    });
+                    limpiarFormNuevoOperativo();
+                    renderCamposOperativo(camposOperativo || []);
+                    setMsgNuevoOperativo(`Operativo creado correctamente con ${payload.data.campos_count} campos.`, 'ok');
+                } catch (error) {
+                    setMsgNuevoOperativo(error.message, 'error');
+                } finally {
+                    ui.btnGuardarNuevoOperativo.disabled = false;
+                    ui.btnGuardarNuevoOperativo.textContent = 'Guardar operativo';
+                }
             }
 
             function setMsgVariedades(msg, type) {
@@ -940,10 +1188,25 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
             ui.btnCerrarModalCodigos.addEventListener('click', cerrarModalCodigosVariedades);
             ui.btnCerrarModalNuevoOperativoX.addEventListener('click', cerrarModalNuevoOperativoRelevamiento);
             ui.btnCerrarModalNuevoOperativo.addEventListener('click', cerrarModalNuevoOperativoRelevamiento);
+            ui.btnGuardarNuevoOperativo.addEventListener('click', guardarNuevoOperativoRelevamiento);
+            ui.btnSeleccionarTodosCampos.addEventListener('click', () => {
+                ui.operativoCamposWrap.querySelectorAll('input[name="operativo_campo"]').forEach((input) => {
+                    input.checked = true;
+                });
+            });
+            ui.btnLimpiarCamposOperativo.addEventListener('click', () => {
+                ui.operativoCamposWrap.querySelectorAll('input[name="operativo_campo"]').forEach((input) => {
+                    input.checked = false;
+                });
+            });
             ui.btnGuardarModalCodigos.addEventListener('click', guardarVariedad);
             ui.formVariedad.addEventListener('submit', (ev) => {
                 ev.preventDefault();
                 guardarVariedad();
+            });
+            ui.formNuevoOperativoRelevamiento.addEventListener('submit', (ev) => {
+                ev.preventDefault();
+                guardarNuevoOperativoRelevamiento();
             });
             ui.buscarVariedad.addEventListener('input', () => {
                 const q = ui.buscarVariedad.value.trim();
