@@ -111,6 +111,11 @@ try {
     }
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        http_response_code(405);
+        ob_clean();
+        echo json_encode(['ok' => false, 'error' => 'La vista de relevamiento de ingeniero es solo lectura']);
+        exit;
+
         $action = (string)($_POST['action'] ?? '');
 
         switch ($action) {

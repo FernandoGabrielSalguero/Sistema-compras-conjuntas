@@ -19,6 +19,12 @@ $model = new RelevamientoFamiliaModel($pdo);
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // ======== GUARDAR (JSON) ========
     header('Content-Type: application/json; charset=UTF-8');
+    http_response_code(405);
+    echo json_encode([
+        'ok' => false,
+        'error' => 'El relevamiento del ingeniero es solo lectura',
+    ]);
+    exit;
 
     $productorIdReal = isset($_POST['productor_id_real']) ? (string)$_POST['productor_id_real'] : '';
 

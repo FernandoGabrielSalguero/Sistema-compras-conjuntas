@@ -20,6 +20,12 @@ $includeArchived = isset($_GET['include_archived']) && in_array(strtolower(trim(
 // ========== POST: guardar datos de producción ==========
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Content-Type: application/json; charset=utf-8');
+    http_response_code(405);
+    echo json_encode([
+        'ok' => false,
+        'error' => 'El relevamiento del ingeniero es solo lectura',
+    ]);
+    exit;
 
     $productorIdReal = isset($_POST['productor_id_real']) ? (string)$_POST['productor_id_real'] : '';
     $fincasPayload   = isset($_POST['fincas']) && is_array($_POST['fincas']) ? $_POST['fincas'] : [];

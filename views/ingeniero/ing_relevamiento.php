@@ -130,7 +130,10 @@ unset($_SESSION['cierre_info']);
             </header>
 
             <section class="content">
-                <?php include __DIR__ . '/../partials/relevamiento/shared/edit_relevamiento.php'; ?>
+                <?php
+                $relevamiento_read_only = true;
+                include __DIR__ . '/../partials/relevamiento/shared/edit_relevamiento.php';
+                ?>
             </section>
         </div>
     </div>

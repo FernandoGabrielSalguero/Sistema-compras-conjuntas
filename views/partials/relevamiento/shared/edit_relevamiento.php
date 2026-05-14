@@ -3,6 +3,7 @@ $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
 $viewsPos = strpos($scriptName, '/views/');
 $appBasePath = $viewsPos !== false ? substr($scriptName, 0, $viewsPos) : '';
 $cierreInfo = $cierre_info ?? null;
+$relevamientoReadOnly = !empty($relevamiento_read_only);
 ?>
 <style>
         /* ===== Tabla Relevamiento (estructura estándar) ===== */
@@ -465,6 +466,7 @@ $cierreInfo = $cierre_info ?? null;
         const APP_BASE_PATH = <?= json_encode($appBasePath, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
         const API_RELEVAMIENTO = `${APP_BASE_PATH}/controllers/ing_relevamientoController.php`;
         const RELEVAMIENTO_PARTIAL_BASE = `${APP_BASE_PATH}/views/partials/relevamiento`;
+        const RELEVAMIENTO_READ_ONLY = <?= json_encode($relevamientoReadOnly, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
         const MODAL_IDS = {
             familia: 'modal-familia',
             produccion: 'modal-produccion',
@@ -599,7 +601,7 @@ $cierreInfo = $cierre_info ?? null;
                         <h2 style="margin:0;">Productores</h2>
                         <div class="cell-actions">
                             <button class="btn-icon" onclick="toggleMostrarArchivados()" title="${relevamientoShowArchived ? 'Ocultar archivados' : 'Mostrar archivados'}" aria-label="${relevamientoShowArchived ? 'Ocultar archivados' : 'Mostrar archivados'}"><span class="material-symbols-outlined">${relevamientoShowArchived ? 'visibility_off' : 'visibility'}</span></button>
-                            <button class="btn btn-aceptar" onclick="promptCrearProductor()">Nuevo productor</button>
+                            ${RELEVAMIENTO_READ_ONLY ? '' : '<button class="btn btn-aceptar" onclick="promptCrearProductor()">Nuevo productor</button>'}
                         </div>
                     </div>
                     <div class="table-tools">
@@ -656,11 +658,11 @@ $cierreInfo = $cierre_info ?? null;
                             <td>${cuit}</td>
                             <td>${estado}</td>
                             <td class="cell-actions">
-                                <button class="btn btn-info" onclick="abrirModificarProductor('${idRealJs}')">Modificar datos</button>
-                                <button class="btn-icon" onclick="${archivado ? `confirmarDesarchivarProductor('${idRealJs}')` : `confirmarArchivarProductor('${idRealJs}')`}" title="${archivado ? 'Desarchivar' : 'Archivar'}" aria-label="${archivado ? 'Desarchivar' : 'Archivar'}"><span class="material-symbols-outlined">${archivado ? 'unarchive' : 'archive'}</span></button>
-                                <button class="icon-btn" title="Imprimir tablas del productor en consola" onclick="relevamientoLogProductorFull('${idRealJs}')">
+                                <button class="btn btn-info" onclick="abrirModificarProductor('${idRealJs}')">${RELEVAMIENTO_READ_ONLY ? 'Ver datos' : 'Modificar datos'}</button>
+                                ${RELEVAMIENTO_READ_ONLY ? '' : `<button class="btn-icon" onclick="${archivado ? `confirmarDesarchivarProductor('${idRealJs}')` : `confirmarArchivarProductor('${idRealJs}')`}" title="${archivado ? 'Desarchivar' : 'Archivar'}" aria-label="${archivado ? 'Desarchivar' : 'Archivar'}"><span class="material-symbols-outlined">${archivado ? 'unarchive' : 'archive'}</span></button>`}
+                                ${RELEVAMIENTO_READ_ONLY ? '' : `<button class="icon-btn" title="Imprimir tablas del productor en consola" onclick="relevamientoLogProductorFull('${idRealJs}')">
                                     <span class="material-symbols-outlined">code</span>
-                                </button>
+                                </button>`}
                             </td>
                         </tr>
                     `;
@@ -697,6 +699,10 @@ $cierreInfo = $cierre_info ?? null;
         }
 
         async function apiPostAction(action, payload = {}) {
+            if (RELEVAMIENTO_READ_ONLY) {
+                throw new Error('Esta vista es solo lectura.');
+            }
+
             const body = new URLSearchParams({
                 action,
                 ...payload
@@ -714,6 +720,21 @@ $cierreInfo = $cierre_info ?? null;
                 throw new Error(data.error || `Error en accion ${action}`);
             }
             return data.data ?? null;
+        }
+
+        function aplicarSoloLectura(root) {
+            if (!RELEVAMIENTO_READ_ONLY || !root) return;
+
+            root.querySelectorAll('input, select, textarea').forEach((el) => {
+                el.disabled = true;
+                if ('readOnly' in el) {
+                    el.readOnly = true;
+                }
+            });
+
+            root.querySelectorAll('button[type="submit"], input[type="submit"]').forEach((el) => {
+                el.remove();
+            });
         }
 
         function toggleMostrarArchivados() {
@@ -760,6 +781,8 @@ $cierreInfo = $cierre_info ?? null;
         }
 
         async function promptCrearProductor() {
+            if (RELEVAMIENTO_READ_ONLY) return;
+
             if (!currentCoop?.id_real) {
                 return;
             }
@@ -803,6 +826,8 @@ $cierreInfo = $cierre_info ?? null;
         }
 
         async function confirmarArchivarProductor(productorIdReal) {
+            if (RELEVAMIENTO_READ_ONLY) return;
+
             openConfirmActionModal(
                 'Archivar productor',
                 `Se archivara el productor ${productorIdReal} y sus fincas/cuarteles.`,
@@ -822,6 +847,8 @@ $cierreInfo = $cierre_info ?? null;
         }
 
         async function confirmarDesarchivarProductor(productorIdReal) {
+            if (RELEVAMIENTO_READ_ONLY) return;
+
             openConfirmActionModal(
                 'Desarchivar productor',
                 `Se desarchivara el productor ${productorIdReal} y sus fincas/cuarteles.`,
@@ -841,6 +868,8 @@ $cierreInfo = $cierre_info ?? null;
         }
 
         async function promptCrearFinca(productorIdReal) {
+            if (RELEVAMIENTO_READ_ONLY) return;
+
             const modal = document.getElementById('modal-crear-finca');
             if (!modal) return;
 
@@ -882,6 +911,8 @@ $cierreInfo = $cierre_info ?? null;
         }
 
         async function promptCrearCuartel(productorIdReal, fincaId) {
+            if (RELEVAMIENTO_READ_ONLY) return;
+
             const modal = document.getElementById('modal-crear-cuartel');
             if (!modal) return;
 
@@ -1466,6 +1497,11 @@ $cierreInfo = $cierre_info ?? null;
                     <span class="material-symbols-outlined">${icon}</span>
                 </button>
             `;
+            const assetActions = (...actions) => {
+                if (RELEVAMIENTO_READ_ONLY) return '';
+                const html = actions.filter(Boolean).join('');
+                return html ? `<div class="asset-actions">${html}</div>` : '';
+            };
 
             const renderFinca = (f) => {
                 const id = String(f.id || '');
@@ -1501,7 +1537,7 @@ $cierreInfo = $cierre_info ?? null;
                                 <span class="asset-node-title">Cuartel: ${variedad}${codigoVariedadTitle}</span>
                                 <span class="asset-node-meta">Código: ${ccode} · Superficie: ${sup} ha · ${cArchivado ? 'Archivado' : 'Activo'}</span>
                             </button>
-                            <div class="asset-actions">${archiveAction}</div>
+                            ${assetActions(archiveAction)}
                         </div>
                     `;
                 }).join('');
@@ -1518,10 +1554,7 @@ $cierreInfo = $cierre_info ?? null;
                                 <span class="asset-node-title">Finca: ${name}</span>
                                 <span class="asset-node-meta">Código: ${code} · ${children.length} cuartel(es) · ${archivado ? 'Archivada' : 'Activa'}</span>
                             </button>
-                            <div class="asset-actions">
-                                ${fincaCreateCuartelAction}
-                                ${fincaArchiveAction}
-                            </div>
+                            ${assetActions(fincaCreateCuartelAction, fincaArchiveAction)}
                         </div>
                         <p class="asset-section-label">Cuarteles</p>
                         <div class="asset-children">
@@ -1553,7 +1586,7 @@ $cierreInfo = $cierre_info ?? null;
                             <span class="asset-node-title">Cuartel: ${variedad}${codigoVariedadTitle}</span>
                             <span class="asset-node-meta">Código: ${ccode} · Sin finca vinculada · ${archivado ? 'Archivado' : 'Activo'}</span>
                         </button>
-                        <div class="asset-actions">${archiveAction}</div>
+                        ${assetActions(archiveAction)}
                     </div>
                 `;
             }).join('');
@@ -1566,9 +1599,9 @@ $cierreInfo = $cierre_info ?? null;
                     <span>${fincas.length} finca(s)</span>
                     <span>${cuarteles.length} cuartel(es)</span>
                 </div>
-                <div class="asset-actions" style="margin-bottom:.65rem;">
+                ${RELEVAMIENTO_READ_ONLY ? '' : `<div class="asset-actions" style="margin-bottom:.65rem;">
                     ${nuevaFincaAction}
-                </div>
+                </div>`}
                 <div class="asset-tree">
                     <div class="asset-tree-item" data-search-text="productor datos personales familia">
                         <button type="button" class="asset-node" data-asset-type="productor" data-asset-id="productor" onclick="selectAssetDetail('productor', 'productor')">
@@ -1599,6 +1632,8 @@ $cierreInfo = $cierre_info ?? null;
         }
 
         async function confirmarArchivarFinca(productorIdReal, fincaId) {
+            if (RELEVAMIENTO_READ_ONLY) return;
+
             openConfirmActionModal(
                 'Archivar finca',
                 `Se archivara la finca ID ${fincaId} y sus cuarteles.`,
@@ -1616,6 +1651,8 @@ $cierreInfo = $cierre_info ?? null;
         }
 
         async function confirmarDesarchivarFinca(productorIdReal, fincaId) {
+            if (RELEVAMIENTO_READ_ONLY) return;
+
             openConfirmActionModal(
                 'Desarchivar finca',
                 `Se desarchivara la finca ID ${fincaId}.`,
@@ -1633,6 +1670,8 @@ $cierreInfo = $cierre_info ?? null;
         }
 
         async function confirmarArchivarCuartel(productorIdReal, cuartelId) {
+            if (RELEVAMIENTO_READ_ONLY) return;
+
             openConfirmActionModal(
                 'Archivar cuartel',
                 `Se archivara el cuartel ID ${cuartelId}.`,
@@ -1650,6 +1689,8 @@ $cierreInfo = $cierre_info ?? null;
         }
 
         async function confirmarDesarchivarCuartel(productorIdReal, cuartelId) {
+            if (RELEVAMIENTO_READ_ONLY) return;
+
             openConfirmActionModal(
                 'Desarchivar cuartel',
                 `Se desarchivara el cuartel ID ${cuartelId}.`,
@@ -1667,6 +1708,10 @@ $cierreInfo = $cierre_info ?? null;
         }
 
         async function guardarFormularioParcial(formId, controllerFile, productorIdReal, mensajeExito) {
+            if (RELEVAMIENTO_READ_ONLY) {
+                throw new Error('Esta vista es solo lectura.');
+            }
+
             const form = document.querySelector(`#productor-modificar-view #${formId}`);
             if (!form) {
                 throw new Error(`No se encontró el formulario ${formId}`);
@@ -1701,7 +1746,7 @@ $cierreInfo = $cierre_info ?? null;
             const idReal = escapeHtml(productorIdReal);
             const archivado = Number(productor?.archivado ?? 0) === 1;
 
-            setCardsTitle(`Modificar productor ${idReal}`);
+            setCardsTitle(`${RELEVAMIENTO_READ_ONLY ? 'Ver productor' : 'Modificar productor'} ${idReal}`);
             currentAssetSelection = {
                 type: 'productor',
                 id: 'productor'
@@ -1717,8 +1762,8 @@ $cierreInfo = $cierre_info ?? null;
                             <span>Estado: ${archivado ? 'Archivado' : 'Activo'}</span>
                         </div>
                         <div class="form-buttons" style="margin-top:0;">
-                            <button class="btn-icon" onclick="${archivado ? `confirmarDesarchivarProductor('${idRealJs}')` : `confirmarArchivarProductor('${idRealJs}')`}" title="${archivado ? 'Desarchivar productor' : 'Archivar productor'}" aria-label="${archivado ? 'Desarchivar productor' : 'Archivar productor'}"><span class="material-symbols-outlined">${archivado ? 'unarchive' : 'archive'}</span></button>
-                            <button class="btn btn-aceptar" onclick="guardarTodoDesdeVista('${idRealJs}')">Guardar cambios</button>
+                            ${RELEVAMIENTO_READ_ONLY ? '' : `<button class="btn-icon" onclick="${archivado ? `confirmarDesarchivarProductor('${idRealJs}')` : `confirmarArchivarProductor('${idRealJs}')`}" title="${archivado ? 'Desarchivar productor' : 'Archivar productor'}" aria-label="${archivado ? 'Desarchivar productor' : 'Archivar productor'}"><span class="material-symbols-outlined">${archivado ? 'unarchive' : 'archive'}</span></button>
+                            <button class="btn btn-aceptar" onclick="guardarTodoDesdeVista('${idRealJs}')">Guardar cambios</button>`}
                         </div>
                     </div>
                     <div class="form-switch" style="margin-bottom:0;">
@@ -1763,6 +1808,7 @@ $cierreInfo = $cierre_info ?? null;
                     if (familiaForm) slotView.appendChild(familiaForm);
                     if (produccionForm) slotView.appendChild(produccionForm);
                     if (cuartelesForm) slotView.appendChild(cuartelesForm);
+                    aplicarSoloLectura(slotView);
                 }
 
                 initGlobalAdvancedToggle(slotView, '#global-advanced-toggle');
@@ -2372,7 +2418,7 @@ $cierreInfo = $cierre_info ?? null;
                                 <h2 style="margin:0;">Productores</h2>
                                 <div class="cell-actions">
                                     <button class="btn-icon" onclick="toggleMostrarArchivados()" title="${relevamientoShowArchived ? 'Ocultar archivados' : 'Mostrar archivados'}" aria-label="${relevamientoShowArchived ? 'Ocultar archivados' : 'Mostrar archivados'}"><span class="material-symbols-outlined">${relevamientoShowArchived ? 'visibility_off' : 'visibility'}</span></button>
-                                    <button class="btn btn-aceptar" onclick="promptCrearProductor()">Nuevo productor</button>
+                                    ${RELEVAMIENTO_READ_ONLY ? '' : '<button class="btn btn-aceptar" onclick="promptCrearProductor()">Nuevo productor</button>'}
                                 </div>
                             </div>
                             <p>No se encontraron productores para esta cooperativa.</p>
@@ -2544,6 +2590,11 @@ $cierreInfo = $cierre_info ?? null;
         }
 
         async function guardarFamilia() {
+            if (RELEVAMIENTO_READ_ONLY) {
+                relevamientoCloseModal('familia');
+                return;
+            }
+
             const modal = relevamientoGetModalElement('familia');
             if (!modal) {
                 return;
@@ -2590,6 +2641,11 @@ $cierreInfo = $cierre_info ?? null;
         }
 
         async function guardarProduccion() {
+            if (RELEVAMIENTO_READ_ONLY) {
+                relevamientoCloseModal('produccion');
+                return;
+            }
+
             const modal = relevamientoGetModalElement('produccion');
             if (!modal) {
                 return;
