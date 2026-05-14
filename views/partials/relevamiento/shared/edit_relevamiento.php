@@ -435,7 +435,7 @@ $relevamientoReadOnly = !empty($relevamiento_read_only);
                     <?php if ($relevamientoReadOnly): ?>
                         <button type="button" class="btn btn-aceptar" onclick="window.StepEdit && window.StepEdit.open()">
                             <span class="material-symbols-outlined">edit_note</span>
-                            Cargar operativo
+                            Operativos
                         </button>
                     <?php endif; ?>
                     <p>Seleccioná una cooperativa para ver sus productores asociados.</p>

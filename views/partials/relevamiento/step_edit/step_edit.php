@@ -221,6 +221,56 @@ $stepEditBasePath = $appBasePath ?? '';
         background: #f8fafc;
     }
 
+    .step-edit-loader {
+        display: grid;
+        gap: 1rem;
+        padding: 22px;
+        border: 1px solid rgba(37, 99, 235, .22);
+        border-radius: 10px;
+        background: #f8fafc;
+    }
+
+    .step-edit-loader-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        color: #0f172a;
+        font-weight: 800;
+    }
+
+    .step-edit-spinner {
+        width: 28px;
+        height: 28px;
+        border: 3px solid #dbeafe;
+        border-top-color: #2563eb;
+        border-radius: 999px;
+        animation: stepEditSpin .8s linear infinite;
+        flex: 0 0 auto;
+    }
+
+    .step-edit-loader-bar {
+        height: 12px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: #dbeafe;
+    }
+
+    .step-edit-loader-bar > span {
+        display: block;
+        height: 100%;
+        width: 0;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #2563eb, #16a34a);
+        transition: width .18s ease;
+    }
+
+    @keyframes stepEditSpin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
     @media (max-width: 900px) {
         .step-edit-dialog {
             max-height: 96vh;
@@ -290,6 +340,8 @@ $stepEditBasePath = $appBasePath ?? '';
             coop: null,
             productor: null,
             form: null,
+            cache: null,
+            loadingToken: 0,
             saveTimers: new Map()
         };
 
@@ -360,7 +412,7 @@ $stepEditBasePath = $appBasePath ?? '';
 
         function renderFlowbar() {
             const items = [];
-            if (state.step !== 'operativos') {
+            if (state.step !== 'operativos' && state.step !== 'cargando') {
                 items.push(`<button type="button" class="btn-icon" data-step-edit-back title="Volver" aria-label="Volver"><span class="material-symbols-outlined">arrow_back</span></button>`);
             }
             if (state.operativo) items.push(`<span class="step-edit-current">${escapeHtml(state.operativo.nombre)}</span>`);
@@ -371,6 +423,40 @@ $stepEditBasePath = $appBasePath ?? '';
 
         function renderLoading(text) {
             content().innerHTML = `<div class="step-edit-empty">${escapeHtml(text)}</div>`;
+        }
+
+        function renderOperativoLoader(text, done = 0, total = 1) {
+            const percent = total > 0 ? Math.round((done / total) * 100) : 0;
+            progress().innerHTML = '';
+            content().innerHTML = `
+                <div class="step-edit-loader">
+                    <div class="step-edit-loader-head">
+                        <span>${escapeHtml(text)}</span>
+                        <span>${pct(percent).toFixed(0)}%</span>
+                    </div>
+                    <div class="step-edit-loader-bar"><span style="width:${pct(percent)}%"></span></div>
+                    <div class="step-edit-muted">Preparando cooperativas, productores y avances para navegar sin recargar.</div>
+                    <div class="step-edit-spinner" aria-label="Cargando"></div>
+                </div>
+            `;
+        }
+
+        function emptyAdvance() {
+            return { esperados: 0, completos: 0, auditados: 0, pendientes: 0, completitud_pct: 0, actividad_pct: 0 };
+        }
+
+        function sumAdvances(items) {
+            const total = emptyAdvance();
+            items.forEach((item) => {
+                const avance = item?.avance || item || {};
+                total.esperados += Number(avance.esperados || 0);
+                total.completos += Number(avance.completos || 0);
+                total.auditados += Number(avance.auditados || 0);
+            });
+            total.pendientes = Math.max(0, total.esperados - total.completos);
+            total.completitud_pct = total.esperados > 0 ? (total.completos / total.esperados) * 100 : 0;
+            total.actividad_pct = total.esperados > 0 ? (total.auditados / total.esperados) * 100 : 0;
+            return total;
         }
 
         async function renderTopProgress() {
@@ -398,6 +484,8 @@ $stepEditBasePath = $appBasePath ?? '';
             state.coop = null;
             state.productor = null;
             state.form = null;
+            state.cache = null;
+            state.loadingToken++;
             subtitle().textContent = 'Selecciona un operativo abierto para empezar.';
             progress().innerHTML = '';
             renderFlowbar();
@@ -422,10 +510,96 @@ $stepEditBasePath = $appBasePath ?? '';
             content().querySelectorAll('[data-op-id]').forEach((card) => {
                 card.addEventListener('click', () => {
                     const op = operativos.find((item) => String(item.id) === String(card.dataset.opId));
-                    state.operativo = op;
-                    loadCooperativas();
+                    preloadOperativo(op).catch((e) => {
+                        content().innerHTML = `<div class="step-edit-empty">${escapeHtml(e.message)}</div>`;
+                    });
                 });
             });
+        }
+
+        async function preloadOperativo(op) {
+            if (!op) return;
+            const token = ++state.loadingToken;
+            state.operativo = op;
+            state.coop = null;
+            state.productor = null;
+            state.form = null;
+            state.cache = { operativoId: Number(op.id), coops: [], productoresByCoop: {}, formsByProductor: {}, general: emptyAdvance() };
+            setStep('cargando');
+            subtitle().textContent = op.nombre;
+            renderFlowbar();
+
+            let done = 0;
+            let total = 1;
+            const update = (text) => {
+                if (token !== state.loadingToken) return;
+                renderOperativoLoader(text, done, total);
+            };
+
+            update('Cargando cooperativas del operativo...');
+            const coops = await apiGet('cooperativas', { operativo_id: op.id });
+            if (token !== state.loadingToken) return;
+            state.cache.coops = coops;
+            done++;
+            total = Math.max(1, 1 + (coops.length * 2));
+            update('Calculando avances de cooperativas...');
+
+            const runLimited = async (items, limit, worker) => {
+                const queue = [...items];
+                const workers = Array.from({ length: Math.min(limit, queue.length) }, async () => {
+                    while (queue.length && token === state.loadingToken) {
+                        await worker(queue.shift());
+                    }
+                });
+                await Promise.all(workers);
+            };
+
+            await runLimited(coops, 3, async (coop) => {
+                let productores = [];
+                try {
+                    const result = await Promise.all([
+                        apiGet('avance_cooperativa', { operativo_id: op.id, coop_id_real: coop.id_real }),
+                        apiGet('productores', { operativo_id: op.id, coop_id_real: coop.id_real })
+                    ]);
+                    coop.avance = result[0];
+                    productores = result[1];
+                } catch (e) {
+                    console.warn('[StepEdit] precarga cooperativa', e);
+                    coop.avance = emptyAdvance();
+                }
+                state.cache.productoresByCoop[coop.id_real] = productores;
+                done += 2;
+                total += productores.length;
+                update(`Cargando productores de ${coop.nombre}...`);
+            });
+
+            const allProductores = [];
+            Object.values(state.cache.productoresByCoop).forEach((list) => {
+                list.forEach((prod) => allProductores.push(prod));
+            });
+
+            update('Calculando avances de productores...');
+            await runLimited(allProductores, 4, async (prod) => {
+                try {
+                    prod.avance = await apiGet('avance_productor', {
+                        operativo_id: op.id,
+                        productor_id_real: prod.id_real
+                    });
+                } catch (e) {
+                    console.warn('[StepEdit] precarga productor', e);
+                    prod.avance = emptyAdvance();
+                }
+                done++;
+                update(`Calculando avance de ${prod.nombre || prod.id_real}...`);
+            });
+
+            if (token !== state.loadingToken) return;
+            state.cache.general = sumAdvances(coops);
+            done = total;
+            update('Operativo listo.');
+            setTimeout(() => {
+                if (token === state.loadingToken) loadCooperativas();
+            }, 180);
         }
 
         async function loadCooperativas() {
@@ -437,23 +611,24 @@ $stepEditBasePath = $appBasePath ?? '';
             subtitle().textContent = state.operativo.nombre;
             renderFlowbar();
             renderLoading('Cargando cooperativas asociadas...');
-            progress().innerHTML = '<div class="step-edit-empty">Calculando avance general...</div>';
-            renderTopProgress();
 
-            const coops = await apiGet('cooperativas', { operativo_id: state.operativo.id });
+            const coops = state.cache?.coops || await apiGet('cooperativas', { operativo_id: state.operativo.id });
             if (!coops.length) {
                 content().innerHTML = '<div class="step-edit-empty">No tenes cooperativas asociadas para este operativo.</div>';
                 return;
+            }
+            if (state.cache?.general) {
+                progress().innerHTML = progressBar(state.cache.general, 'Operativo general');
             }
 
             content().innerHTML = `<div class="step-edit-grid">${coops.map((coop) => `
                 <article class="step-edit-list-card" data-coop-id="${escapeHtml(coop.id_real)}">
                     <div class="step-edit-list-title">
                         <span>${escapeHtml(coop.nombre)}</span>
-                        <span data-coop-pct="${escapeHtml(coop.id_real)}">--</span>
+                        <span>${pct(coop.avance?.completitud_pct).toFixed(0)}%</span>
                     </div>
                     <div class="step-edit-muted">${Number(coop.productores_count || 0)} productores · ${escapeHtml(coop.cuit || 'Sin CUIT')}</div>
-                    <div class="step-edit-progress"><span data-coop-bar="${escapeHtml(coop.id_real)}" style="width:0%"></span></div>
+                    <div class="step-edit-progress"><span style="width:${pct(coop.avance?.completitud_pct)}%"></span></div>
                 </article>
             `).join('')}</div>`;
 
@@ -464,7 +639,6 @@ $stepEditBasePath = $appBasePath ?? '';
                     loadProductores();
                 });
             });
-            hydrateCooperativasProgress(coops);
         }
 
         async function loadProductores() {
@@ -477,7 +651,7 @@ $stepEditBasePath = $appBasePath ?? '';
             renderFlowbar();
             renderLoading('Cargando productores...');
 
-            const productores = await apiGet('productores', { operativo_id: state.operativo.id, coop_id_real: state.coop.id_real });
+            const productores = state.cache?.productoresByCoop?.[state.coop.id_real] || await apiGet('productores', { operativo_id: state.operativo.id, coop_id_real: state.coop.id_real });
             if (!productores.length) {
                 content().innerHTML = '<div class="step-edit-empty">No hay productores activos en esta cooperativa.</div>';
                 return;
@@ -487,11 +661,11 @@ $stepEditBasePath = $appBasePath ?? '';
                 <article class="step-edit-list-card" data-prod-id="${escapeHtml(prod.id_real)}">
                     <div class="step-edit-list-title">
                         <span>${escapeHtml(prod.nombre)}</span>
-                        <span data-prod-pct="${escapeHtml(prod.id_real)}">--</span>
+                        <span>${pct(prod.avance?.completitud_pct).toFixed(0)}%</span>
                     </div>
                     <div class="step-edit-muted">${escapeHtml(prod.id_real)} · ${escapeHtml(prod.cuit || 'Sin CUIT')}</div>
-                    <div class="step-edit-progress"><span data-prod-bar="${escapeHtml(prod.id_real)}" style="width:0%"></span></div>
-                    <div class="step-edit-muted" data-prod-pending="${escapeHtml(prod.id_real)}" style="margin-top:.4rem;">Calculando avance...</div>
+                    <div class="step-edit-progress"><span style="width:${pct(prod.avance?.completitud_pct)}%"></span></div>
+                    <div class="step-edit-muted" style="margin-top:.4rem;">Pendientes: ${Number(prod.avance?.pendientes || 0)}</div>
                 </article>
             `).join('')}</div>`;
 
@@ -502,7 +676,6 @@ $stepEditBasePath = $appBasePath ?? '';
                     loadForm();
                 });
             });
-            hydrateProductoresProgress(productores);
         }
 
         async function hydrateCooperativasProgress(coops) {
@@ -685,13 +858,38 @@ $stepEditBasePath = $appBasePath ?? '';
             subtitle().textContent = `${state.operativo.nombre} · ${state.productor.nombre}`;
             renderFlowbar();
             renderLoading('Cargando campos del operativo...');
-            state.form = await apiGet('form', { operativo_id: state.operativo.id, productor_id_real: state.productor.id_real });
+            const productorId = String(state.productor.id_real);
+            if (state.cache?.formsByProductor?.[productorId]) {
+                state.form = state.cache.formsByProductor[productorId];
+            } else {
+                state.form = await apiGet('form', { operativo_id: state.operativo.id, productor_id_real: state.productor.id_real });
+                if (state.cache?.formsByProductor) {
+                    state.cache.formsByProductor[productorId] = state.form;
+                }
+            }
             renderForm();
         }
 
         function saveStateEl(input) {
             const key = `${input.dataset.scope}:${input.dataset.entityId || 'productor'}:${input.dataset.tabla}.${input.dataset.campo}`;
             return content().querySelector(`[data-save-state="${cssEscape(key)}"]`);
+        }
+
+        function updateFormCachedValue(input) {
+            if (!state.form) return;
+            const key = `${input.dataset.tabla}.${input.dataset.campo}`;
+            const scope = input.dataset.scope;
+            const entityId = input.dataset.entityId || '';
+
+            if (scope === 'productor') {
+                state.form.values.productor = state.form.values.productor || {};
+                state.form.values.productor[key] = input.value;
+                return;
+            }
+
+            state.form.values[scope] = state.form.values[scope] || {};
+            state.form.values[scope][entityId] = state.form.values[scope][entityId] || {};
+            state.form.values[scope][entityId][key] = input.value;
         }
 
         function scheduleSave(input) {
@@ -718,6 +916,7 @@ $stepEditBasePath = $appBasePath ?? '';
                     entity_id: input.dataset.entityId || 0,
                     value: input.value
                 });
+                updateFormCachedValue(input);
                 state.form.avance = computeFormProgressFromInputs();
                 if (el) {
                     el.className = 'step-edit-save-state ok';
@@ -744,6 +943,7 @@ $stepEditBasePath = $appBasePath ?? '';
         }
 
         function close() {
+            state.loadingToken++;
             modal().classList.add('hidden');
             modal().setAttribute('aria-hidden', 'true');
         }
