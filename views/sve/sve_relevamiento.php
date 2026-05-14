@@ -338,6 +338,140 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
         .operativo-msg.error {
             color: #b91c1c;
         }
+
+        .operativo-stepper {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.5rem;
+            margin-bottom: 0.85rem;
+        }
+
+        .operativo-step {
+            border: 1px solid rgba(15, 23, 42, 0.14);
+            background: #fff;
+            border-radius: 0.55rem;
+            padding: 0.6rem 0.7rem;
+            cursor: pointer;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-width: 0;
+        }
+
+        .operativo-step.is-active {
+            border-color: #5b21b6;
+            background: rgba(91, 33, 182, 0.08);
+            color: #3b0764;
+        }
+
+        .operativo-step-number {
+            width: 1.55rem;
+            height: 1.55rem;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #e2e8f0;
+            color: #0f172a;
+            font-weight: 700;
+            font-size: 0.82rem;
+            flex: 0 0 auto;
+        }
+
+        .operativo-step.is-active .operativo-step-number {
+            background: #5b21b6;
+            color: #fff;
+        }
+
+        .operativo-step-label {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .operativo-step-panel[hidden] {
+            display: none !important;
+        }
+
+        .operativo-table-wrap {
+            max-height: 420px;
+            overflow: auto;
+            border: 1px solid rgba(15, 23, 42, 0.14);
+            border-radius: 0.5rem;
+            background: #fff;
+        }
+
+        .operativo-table-wrap table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .operativo-table-wrap th,
+        .operativo-table-wrap td {
+            padding: 0.5rem 0.6rem;
+            border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+            text-align: left;
+            font-size: 0.9rem;
+            vertical-align: middle;
+        }
+
+        .operativo-table-wrap th {
+            position: sticky;
+            top: 0;
+            background: #f1f5f9;
+            z-index: 1;
+        }
+
+        .operativo-action-btn {
+            border: 0;
+            background: transparent;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #334155;
+            padding: 0.25rem;
+        }
+
+        .operativo-action-btn.danger {
+            color: #b91c1c;
+        }
+
+        .operativo-action-btn:hover {
+            background: rgba(15, 23, 42, 0.06);
+            border-radius: 0.35rem;
+        }
+
+        .operativo-plan {
+            display: grid;
+            gap: 0.75rem;
+            color: #334155;
+        }
+
+        .operativo-plan-item {
+            border: 1px solid rgba(15, 23, 42, 0.12);
+            border-radius: 0.55rem;
+            background: #fff;
+            padding: 0.75rem;
+        }
+
+        .operativo-plan-item h4 {
+            margin: 0 0 0.3rem;
+            color: #0f172a;
+        }
+
+        .operativo-plan-item p {
+            margin: 0;
+        }
+
+        @media (max-width: 720px) {
+            .operativo-stepper {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 
@@ -610,54 +744,113 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
                 </button>
             </div>
             <div class="sve-modal-body">
-                <form id="formNuevoOperativoRelevamiento">
-                    <div class="operativo-form-grid">
-                        <div class="input-group">
-                            <label for="operativoNombre">Nombre</label>
-                            <div class="input-icon">
-                                <span class="material-icons">edit_note</span>
-                                <input type="text" id="operativoNombre" maxlength="255" required />
-                            </div>
-                        </div>
-                        <div class="input-group">
-                            <label for="operativoFechaInicio">Fecha de inicio</label>
-                            <div class="input-icon">
-                                <span class="material-icons">event</span>
-                                <input type="date" id="operativoFechaInicio" required />
-                            </div>
-                        </div>
-                        <div class="input-group">
-                            <label for="operativoFechaFin">Fecha de finalizacion</label>
-                            <div class="input-icon">
-                                <span class="material-icons">event_available</span>
-                                <input type="date" id="operativoFechaFin" required />
-                            </div>
-                        </div>
-                        <div class="input-group">
-                            <label for="operativoEstado">Estado</label>
-                            <div class="input-icon">
-                                <span class="material-icons">toggle_on</span>
-                                <select id="operativoEstado">
-                                    <option value="borrador">Borrador</option>
-                                    <option value="abierto">Abierto</option>
-                                    <option value="cerrado">Cerrado</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
+                <div class="operativo-stepper" aria-label="Pasos del operativo de relevamiento">
+                    <button type="button" class="operativo-step is-active" data-operativo-step="1">
+                        <span class="operativo-step-number">1</span>
+                        <span class="operativo-step-label">Crear operativo</span>
+                    </button>
+                    <button type="button" class="operativo-step" data-operativo-step="2">
+                        <span class="operativo-step-number">2</span>
+                        <span class="operativo-step-label">Ver operativos</span>
+                    </button>
+                    <button type="button" class="operativo-step" data-operativo-step="3">
+                        <span class="operativo-step-number">3</span>
+                        <span class="operativo-step-label">Avance</span>
+                    </button>
+                </div>
 
+                <section class="operativo-step-panel" data-operativo-panel="1">
+                    <form id="formNuevoOperativoRelevamiento">
+                        <input type="hidden" id="operativoId" />
+                        <div class="operativo-form-grid">
+                            <div class="input-group">
+                                <label for="operativoNombre">Nombre</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">edit_note</span>
+                                    <input type="text" id="operativoNombre" maxlength="255" required />
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="operativoFechaInicio">Fecha de inicio</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">event</span>
+                                    <input type="date" id="operativoFechaInicio" required />
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="operativoFechaFin">Fecha de finalizacion</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">event_available</span>
+                                    <input type="date" id="operativoFechaFin" required />
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="operativoEstado">Estado</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">toggle_on</span>
+                                    <select id="operativoEstado">
+                                        <option value="borrador">Borrador</option>
+                                        <option value="abierto">Abierto</option>
+                                        <option value="cerrado">Cerrado</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="operativo-fields-head">
+                            <h4 class="variedades-section-title">Campos a completar</h4>
+                            <div class="operativo-fields-actions">
+                                <button type="button" class="btn-mini" id="btnSeleccionarTodosCampos">Seleccionar todos</button>
+                                <button type="button" class="btn-mini" id="btnLimpiarCamposOperativo">Limpiar</button>
+                            </div>
+                        </div>
+                        <div id="operativoCamposWrap" class="operativo-fields-wrap">
+                            <div>Cargando campos...</div>
+                        </div>
+                        <div id="msgNuevoOperativo" class="operativo-msg"></div>
+                    </form>
+                </section>
+
+                <section class="operativo-step-panel" data-operativo-panel="2" hidden>
                     <div class="operativo-fields-head">
-                        <h4 class="variedades-section-title">Campos a completar</h4>
-                        <div class="operativo-fields-actions">
-                            <button type="button" class="btn-mini" id="btnSeleccionarTodosCampos">Seleccionar todos</button>
-                            <button type="button" class="btn-mini" id="btnLimpiarCamposOperativo">Limpiar</button>
+                        <h4 class="variedades-section-title">Operativos creados</h4>
+                        <button type="button" class="btn-mini" id="btnRefrescarOperativos">Actualizar</button>
+                    </div>
+                    <div class="operativo-table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Estado</th>
+                                    <th>Fecha de inicio</th>
+                                    <th>Fecha de cierre</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaOperativosBody">
+                                <tr><td colspan="5">Cargando operativos...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="msgOperativosListado" class="operativo-msg"></div>
+                </section>
+
+                <section class="operativo-step-panel" data-operativo-panel="3" hidden>
+                    <div class="operativo-plan">
+                        <div class="operativo-plan-item">
+                            <h4>Definir unidad de avance</h4>
+                            <p>Necesitamos acordar si el progreso se mide por productor, por finca/cuartel o por campo completado del operativo.</p>
+                        </div>
+                        <div class="operativo-plan-item">
+                            <h4>Asignacion indirecta</h4>
+                            <p>El calculo deberia cruzar ingenieros, cooperativas asociadas y productores de esas cooperativas para cada operativo.</p>
+                        </div>
+                        <div class="operativo-plan-item">
+                            <h4>Auditoria de cambios</h4>
+                            <p>Para medir modificacion real por operativo probablemente conviene registrar snapshots o logs de campos completados.</p>
                         </div>
                     </div>
-                    <div id="operativoCamposWrap" class="operativo-fields-wrap">
-                        <div>Cargando campos...</div>
-                    </div>
-                    <div id="msgNuevoOperativo" class="operativo-msg"></div>
-                </form>
+                </section>
             </div>
             <div class="sve-modal-footer">
                 <button type="button" class="btn btn-cancelar" id="btnCerrarModalNuevoOperativo">Cerrar</button>
@@ -700,15 +893,19 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
                 btnGuardarNuevoOperativo: $('btnGuardarNuevoOperativo'),
                 btnSeleccionarTodosCampos: $('btnSeleccionarTodosCampos'),
                 btnLimpiarCamposOperativo: $('btnLimpiarCamposOperativo'),
+                btnRefrescarOperativos: $('btnRefrescarOperativos'),
                 btnGuardarModalCodigos: $('btnGuardarModalCodigos'),
                 formVariedad: $('formVariedad'),
                 formNuevoOperativoRelevamiento: $('formNuevoOperativoRelevamiento'),
+                operativoId: $('operativoId'),
                 operativoNombre: $('operativoNombre'),
                 operativoFechaInicio: $('operativoFechaInicio'),
                 operativoFechaFin: $('operativoFechaFin'),
                 operativoEstado: $('operativoEstado'),
                 operativoCamposWrap: $('operativoCamposWrap'),
                 msgNuevoOperativo: $('msgNuevoOperativo'),
+                tablaOperativosBody: $('tablaOperativosBody'),
+                msgOperativosListado: $('msgOperativosListado'),
                 variedadId: $('variedadId'),
                 codigoVariedad: $('codigoVariedad'),
                 nombreVariedad: $('nombreVariedad'),
@@ -717,6 +914,7 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
                 msgVariedades: $('msgVariedades')
             };
             let camposOperativo = null;
+            let operativosCache = [];
 
             function escapeHtml(text) {
                 return String(text ?? '')
@@ -954,6 +1152,7 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
                 ui.modalNuevoOperativoRelevamiento.classList.add('active');
                 ui.modalNuevoOperativoRelevamiento.setAttribute('aria-hidden', 'false');
                 limpiarFormNuevoOperativo();
+                activarPasoOperativo(1);
                 cargarCamposOperativo();
                 setTimeout(() => {
                     ui.operativoNombre.focus();
@@ -978,15 +1177,36 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
                 ui.msgNuevoOperativo.textContent = msg || '';
             }
 
+            function setMsgOperativosListado(msg, type) {
+                ui.msgOperativosListado.className = 'operativo-msg' + (type ? (' ' + type) : '');
+                ui.msgOperativosListado.textContent = msg || '';
+            }
+
+            function activarPasoOperativo(step) {
+                const target = String(step);
+                ui.modalNuevoOperativoRelevamiento.querySelectorAll('[data-operativo-step]').forEach((btn) => {
+                    btn.classList.toggle('is-active', btn.getAttribute('data-operativo-step') === target);
+                });
+                ui.modalNuevoOperativoRelevamiento.querySelectorAll('[data-operativo-panel]').forEach((panel) => {
+                    panel.hidden = panel.getAttribute('data-operativo-panel') !== target;
+                });
+                ui.btnGuardarNuevoOperativo.style.display = target === '1' ? '' : 'none';
+                if (target === '2') {
+                    cargarOperativosRelevamiento();
+                }
+            }
+
             function limpiarFormNuevoOperativo() {
                 ui.formNuevoOperativoRelevamiento.reset();
+                ui.operativoId.value = '';
                 ui.operativoEstado.value = 'borrador';
                 setMsgNuevoOperativo('', '');
                 ui.btnGuardarNuevoOperativo.disabled = false;
                 ui.btnGuardarNuevoOperativo.textContent = 'Guardar operativo';
             }
 
-            function renderCamposOperativo(rows) {
+            function renderCamposOperativo(rows, selectedKeys) {
+                const selected = new Set(Array.isArray(selectedKeys) ? selectedKeys.map(String) : []);
                 if (!Array.isArray(rows) || rows.length === 0) {
                     ui.operativoCamposWrap.innerHTML = '<div>No hay campos configurables.</div>';
                     return;
@@ -1005,7 +1225,7 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
                         <div class="operativo-field-list">
                             ${groups[group].map((field) => `
                                 <label class="operativo-field-item">
-                                    <input type="checkbox" name="operativo_campo" value="${escapeHtml(field.key)}">
+                                    <input type="checkbox" name="operativo_campo" value="${escapeHtml(field.key)}" ${selected.has(String(field.key)) ? 'checked' : ''}>
                                     <span>${escapeHtml(field.etiqueta)} <small>(${escapeHtml(field.alcance)})</small></span>
                                 </label>
                             `).join('')}
@@ -1036,6 +1256,7 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
             }
 
             async function guardarNuevoOperativoRelevamiento() {
+                const id = ui.operativoId.value.trim();
                 const nombre = ui.operativoNombre.value.trim();
                 const fechaInicio = ui.operativoFechaInicio.value.trim();
                 const fechaFin = ui.operativoFechaFin.value.trim();
@@ -1063,7 +1284,8 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
 
                 try {
                     const payload = await postJson({
-                        action: 'relevamiento_operativo_create',
+                        action: id ? 'relevamiento_operativo_update' : 'relevamiento_operativo_create',
+                        id,
                         nombre,
                         fecha_inicio: fechaInicio,
                         fecha_fin: fechaFin,
@@ -1072,12 +1294,115 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
                     });
                     limpiarFormNuevoOperativo();
                     renderCamposOperativo(camposOperativo || []);
-                    setMsgNuevoOperativo(`Operativo creado correctamente con ${payload.data.campos_count} campos.`, 'ok');
+                    activarPasoOperativo(2);
+                    setMsgOperativosListado(`Operativo ${id ? 'actualizado' : 'creado'} correctamente con ${payload.data.campos_count} campos.`, 'ok');
                 } catch (error) {
                     setMsgNuevoOperativo(error.message, 'error');
                 } finally {
                     ui.btnGuardarNuevoOperativo.disabled = false;
                     ui.btnGuardarNuevoOperativo.textContent = 'Guardar operativo';
+                }
+            }
+
+            function renderTablaOperativos(rows) {
+                operativosCache = Array.isArray(rows) ? rows : [];
+                if (operativosCache.length === 0) {
+                    ui.tablaOperativosBody.innerHTML = '<tr><td colspan="5">No hay operativos creados.</td></tr>';
+                    return;
+                }
+
+                ui.tablaOperativosBody.innerHTML = operativosCache.map((row) => {
+                    const id = escapeHtml(row.id);
+                    const estado = String(row.estado || 'borrador');
+                    const option = (value, label) => `<option value="${value}" ${estado === value ? 'selected' : ''}>${label}</option>`;
+
+                    return `
+                        <tr data-operativo-id="${id}">
+                            <td>${escapeHtml(row.nombre || '-')}</td>
+                            <td>
+                                <select class="operativo-estado-select" data-operativo-estado="${id}">
+                                    ${option('borrador', 'Borrador')}
+                                    ${option('abierto', 'Abierto')}
+                                    ${option('cerrado', 'Cerrado')}
+                                </select>
+                            </td>
+                            <td>${escapeHtml(row.fecha_inicio || '-')}</td>
+                            <td>${escapeHtml(row.fecha_fin || '-')}</td>
+                            <td>
+                                <div class="acciones-mini">
+                                    <button type="button" class="operativo-action-btn" data-operativo-edit="${id}" title="Editar" aria-label="Editar">
+                                        <span class="material-icons">edit</span>
+                                    </button>
+                                    <button type="button" class="operativo-action-btn danger" data-operativo-delete="${id}" title="Eliminar" aria-label="Eliminar">
+                                        <span class="material-icons">delete</span>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            async function cargarOperativosRelevamiento() {
+                ui.tablaOperativosBody.innerHTML = '<tr><td colspan="5">Cargando operativos...</td></tr>';
+                try {
+                    const payload = await getJson({ action: 'relevamiento_operativos_list' });
+                    renderTablaOperativos(payload.data || []);
+                } catch (error) {
+                    ui.tablaOperativosBody.innerHTML = `<tr><td colspan="5">${escapeHtml(error.message)}</td></tr>`;
+                }
+            }
+
+            async function editarOperativoRelevamiento(id) {
+                try {
+                    const payload = await getJson({ action: 'relevamiento_operativo_get', id });
+                    const row = payload.data || {};
+                    await cargarCamposOperativo();
+
+                    ui.operativoId.value = String(row.id || '');
+                    ui.operativoNombre.value = String(row.nombre || '');
+                    ui.operativoFechaInicio.value = String(row.fecha_inicio || '');
+                    ui.operativoFechaFin.value = String(row.fecha_fin || '');
+                    ui.operativoEstado.value = String(row.estado || 'borrador');
+                    renderCamposOperativo(camposOperativo || [], (row.campos || []).map((field) => field.key));
+                    ui.btnGuardarNuevoOperativo.textContent = 'Guardar cambios';
+                    setMsgNuevoOperativo('', '');
+                    activarPasoOperativo(1);
+                    ui.operativoNombre.focus();
+                } catch (error) {
+                    setMsgOperativosListado(error.message, 'error');
+                }
+            }
+
+            async function cambiarEstadoOperativoRelevamiento(id, estado) {
+                try {
+                    await postJson({
+                        action: 'relevamiento_operativo_estado',
+                        id,
+                        estado
+                    });
+                    setMsgOperativosListado('Estado actualizado correctamente.', 'ok');
+                    await cargarOperativosRelevamiento();
+                } catch (error) {
+                    setMsgOperativosListado(error.message, 'error');
+                    await cargarOperativosRelevamiento();
+                }
+            }
+
+            async function eliminarOperativoRelevamiento(id) {
+                if (!confirm('Eliminar este operativo de relevamiento?')) {
+                    return;
+                }
+
+                try {
+                    await postJson({
+                        action: 'relevamiento_operativo_delete',
+                        id
+                    });
+                    setMsgOperativosListado('Operativo eliminado correctamente.', 'ok');
+                    await cargarOperativosRelevamiento();
+                } catch (error) {
+                    setMsgOperativosListado(error.message, 'error');
                 }
             }
 
@@ -1189,6 +1514,10 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
             ui.btnCerrarModalNuevoOperativoX.addEventListener('click', cerrarModalNuevoOperativoRelevamiento);
             ui.btnCerrarModalNuevoOperativo.addEventListener('click', cerrarModalNuevoOperativoRelevamiento);
             ui.btnGuardarNuevoOperativo.addEventListener('click', guardarNuevoOperativoRelevamiento);
+            ui.modalNuevoOperativoRelevamiento.querySelectorAll('[data-operativo-step]').forEach((btn) => {
+                btn.addEventListener('click', () => activarPasoOperativo(btn.getAttribute('data-operativo-step')));
+            });
+            ui.btnRefrescarOperativos.addEventListener('click', cargarOperativosRelevamiento);
             ui.btnSeleccionarTodosCampos.addEventListener('click', () => {
                 ui.operativoCamposWrap.querySelectorAll('input[name="operativo_campo"]').forEach((input) => {
                     input.checked = true;
@@ -1207,6 +1536,25 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
             ui.formNuevoOperativoRelevamiento.addEventListener('submit', (ev) => {
                 ev.preventDefault();
                 guardarNuevoOperativoRelevamiento();
+            });
+
+            ui.tablaOperativosBody.addEventListener('change', (ev) => {
+                const select = ev.target.closest('[data-operativo-estado]');
+                if (!select) return;
+                cambiarEstadoOperativoRelevamiento(select.getAttribute('data-operativo-estado'), select.value);
+            });
+
+            ui.tablaOperativosBody.addEventListener('click', (ev) => {
+                const editBtn = ev.target.closest('[data-operativo-edit]');
+                if (editBtn) {
+                    editarOperativoRelevamiento(editBtn.getAttribute('data-operativo-edit'));
+                    return;
+                }
+
+                const deleteBtn = ev.target.closest('[data-operativo-delete]');
+                if (deleteBtn) {
+                    eliminarOperativoRelevamiento(deleteBtn.getAttribute('data-operativo-delete'));
+                }
             });
             ui.buscarVariedad.addEventListener('input', () => {
                 const q = ui.buscarVariedad.value.trim();

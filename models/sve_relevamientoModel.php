@@ -547,6 +547,218 @@ final class SveRelevamientoModel
         }
     }
 
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function listarOperativosRelevamiento(): array
+    {
+        $stmt = $this->pdo->query("
+            SELECT
+                ro.id,
+                ro.nombre,
+                ro.fecha_inicio,
+                ro.fecha_fin,
+                ro.estado,
+                COUNT(roc.id) AS campos_count
+            FROM relevamiento_operativos ro
+            LEFT JOIN relevamiento_operativo_campos roc
+                ON roc.operativo_id = ro.id
+            GROUP BY ro.id, ro.nombre, ro.fecha_inicio, ro.fecha_fin, ro.estado
+            ORDER BY ro.fecha_inicio DESC, ro.id DESC
+        ");
+
+        return $stmt->fetchAll() ?: [];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function obtenerOperativoRelevamiento(int $id): array
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT id, nombre, fecha_inicio, fecha_fin, estado
+            FROM relevamiento_operativos
+            WHERE id = :id
+            LIMIT 1
+        ");
+        $stmt->execute([':id' => $id]);
+        $operativo = $stmt->fetch();
+
+        if (!$operativo) {
+            throw new InvalidArgumentException('Operativo no encontrado');
+        }
+
+        $camposStmt = $this->pdo->prepare("
+            SELECT tabla, campo, etiqueta, grupo, alcance, obligatorio, orden
+            FROM relevamiento_operativo_campos
+            WHERE operativo_id = :id
+            ORDER BY orden ASC, id ASC
+        ");
+        $camposStmt->execute([':id' => $id]);
+        $campos = $camposStmt->fetchAll() ?: [];
+
+        foreach ($campos as &$campo) {
+            $campo['key'] = $campo['tabla'] . '.' . $campo['campo'];
+        }
+        unset($campo);
+
+        $operativo['campos'] = $campos;
+        return $operativo;
+    }
+
+    /**
+     * @param array<int, string> $fieldKeys
+     * @return array<string, mixed>
+     */
+    public function actualizarOperativoRelevamiento(
+        int $id,
+        string $nombre,
+        string $fechaInicio,
+        string $fechaFin,
+        string $estado,
+        array $fieldKeys
+    ): array {
+        if ($id <= 0) {
+            throw new InvalidArgumentException('ID de operativo invalido');
+        }
+
+        $this->obtenerOperativoRelevamiento($id);
+
+        $nombre = trim($nombre);
+        $fechaInicio = trim($fechaInicio);
+        $fechaFin = trim($fechaFin);
+        $estado = in_array($estado, ['borrador', 'abierto', 'cerrado'], true) ? $estado : 'borrador';
+
+        if ($nombre === '') {
+            throw new InvalidArgumentException('El nombre del operativo es obligatorio');
+        }
+        if (!$this->isValidDate($fechaInicio) || !$this->isValidDate($fechaFin)) {
+            throw new InvalidArgumentException('Las fechas del operativo son obligatorias');
+        }
+        if ($fechaFin < $fechaInicio) {
+            throw new InvalidArgumentException('La fecha de finalizacion no puede ser anterior a la fecha de inicio');
+        }
+
+        $selectedFields = $this->resolverCamposSeleccionados($fieldKeys);
+
+        $this->pdo->beginTransaction();
+        try {
+            $stmt = $this->pdo->prepare("
+                UPDATE relevamiento_operativos
+                SET nombre = :nombre,
+                    fecha_inicio = :fecha_inicio,
+                    fecha_fin = :fecha_fin,
+                    estado = :estado
+                WHERE id = :id
+            ");
+            $stmt->execute([
+                ':id' => $id,
+                ':nombre' => $nombre,
+                ':fecha_inicio' => $fechaInicio,
+                ':fecha_fin' => $fechaFin,
+                ':estado' => $estado,
+            ]);
+
+            $delete = $this->pdo->prepare("DELETE FROM relevamiento_operativo_campos WHERE operativo_id = :id");
+            $delete->execute([':id' => $id]);
+
+            $insertCampo = $this->pdo->prepare("
+                INSERT INTO relevamiento_operativo_campos
+                    (operativo_id, tabla, campo, etiqueta, grupo, alcance, obligatorio, orden)
+                VALUES
+                    (:operativo_id, :tabla, :campo, :etiqueta, :grupo, :alcance, :obligatorio, :orden)
+            ");
+
+            foreach ($selectedFields as $index => $field) {
+                $insertCampo->execute([
+                    ':operativo_id' => $id,
+                    ':tabla' => $field['tabla'],
+                    ':campo' => $field['campo'],
+                    ':etiqueta' => $field['etiqueta'],
+                    ':grupo' => $field['grupo'],
+                    ':alcance' => $field['alcance'],
+                    ':obligatorio' => 0,
+                    ':orden' => $index + 1,
+                ]);
+            }
+
+            $this->pdo->commit();
+
+            return [
+                'id' => $id,
+                'nombre' => $nombre,
+                'fecha_inicio' => $fechaInicio,
+                'fecha_fin' => $fechaFin,
+                'estado' => $estado,
+                'campos_count' => count($selectedFields),
+            ];
+        } catch (Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
+    }
+
+    public function actualizarEstadoOperativoRelevamiento(int $id, string $estado): void
+    {
+        if ($id <= 0) {
+            throw new InvalidArgumentException('ID de operativo invalido');
+        }
+        if (!in_array($estado, ['borrador', 'abierto', 'cerrado'], true)) {
+            throw new InvalidArgumentException('Estado invalido');
+        }
+
+        $stmt = $this->pdo->prepare("
+            UPDATE relevamiento_operativos
+            SET estado = :estado
+            WHERE id = :id
+        ");
+        $stmt->execute([':id' => $id, ':estado' => $estado]);
+
+        if ($stmt->rowCount() === 0) {
+            $this->obtenerOperativoRelevamiento($id);
+        }
+    }
+
+    public function eliminarOperativoRelevamiento(int $id): void
+    {
+        if ($id <= 0) {
+            throw new InvalidArgumentException('ID de operativo invalido');
+        }
+
+        $stmt = $this->pdo->prepare("DELETE FROM relevamiento_operativos WHERE id = :id");
+        $stmt->execute([':id' => $id]);
+    }
+
+    /**
+     * @param array<int, string> $fieldKeys
+     * @return array<int, array<string, mixed>>
+     */
+    private function resolverCamposSeleccionados(array $fieldKeys): array
+    {
+        $catalogByKey = [];
+        foreach ($this->listarCamposOperativoRelevamiento() as $field) {
+            $catalogByKey[$field['key']] = $field;
+        }
+
+        $fieldKeys = array_values(array_unique(array_filter(array_map('strval', $fieldKeys))));
+        if (empty($fieldKeys)) {
+            throw new InvalidArgumentException('Selecciona al menos un campo para el operativo');
+        }
+
+        $selectedFields = [];
+        foreach ($fieldKeys as $key) {
+            if (isset($catalogByKey[$key])) {
+                $selectedFields[] = $catalogByKey[$key];
+            }
+        }
+
+        if (empty($selectedFields)) {
+            throw new InvalidArgumentException('Los campos seleccionados no son validos');
+        }
+
+        return $selectedFields;
+    }
+
     private function isValidDate(string $value): bool
     {
         $dt = DateTime::createFromFormat('Y-m-d', $value);
