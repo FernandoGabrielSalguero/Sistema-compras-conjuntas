@@ -381,6 +381,10 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
                             <span class="material-icons">code</span>
                             <span>Codigos de variedades</span>
                         </button>
+                        <button type="button" class="btn btn-info" id="btnNuevoOperativoRelevamiento">
+                            <span class="material-icons">add_task</span>
+                            <span>Nuevo operativo de relevamiento</span>
+                        </button>
                     </div>
                 </div>
 
@@ -520,6 +524,21 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
         </div>
     </div>
 
+    <div class="sve-modal" id="modalNuevoOperativoRelevamiento" aria-hidden="true" inert>
+        <div class="sve-modal-content" role="dialog" aria-modal="true" aria-labelledby="modalNuevoOperativoRelevamientoTitulo">
+            <div class="sve-modal-header">
+                <h3 id="modalNuevoOperativoRelevamientoTitulo">Nuevo operativo de relevamiento</h3>
+                <button type="button" class="sve-modal-close" id="btnCerrarModalNuevoOperativoX" aria-label="Cerrar">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <div class="sve-modal-body"></div>
+            <div class="sve-modal-footer">
+                <button type="button" class="btn btn-cancelar" id="btnCerrarModalNuevoOperativo">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         (function() {
             const API_URL = '../../controllers/sve_relevamientoController.php';
@@ -544,9 +563,13 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
                 kpiCuarteles: $('kpiCuarteles'),
                 kpiSinCuarteles: $('kpiSinCuarteles'),
                 btnCodigosVariedades: $('btnCodigosVariedades'),
+                btnNuevoOperativoRelevamiento: $('btnNuevoOperativoRelevamiento'),
                 modalCodigosVariedades: $('modalCodigosVariedades'),
+                modalNuevoOperativoRelevamiento: $('modalNuevoOperativoRelevamiento'),
                 btnCerrarModalCodigosX: $('btnCerrarModalCodigosX'),
                 btnCerrarModalCodigos: $('btnCerrarModalCodigos'),
+                btnCerrarModalNuevoOperativoX: $('btnCerrarModalNuevoOperativoX'),
+                btnCerrarModalNuevoOperativo: $('btnCerrarModalNuevoOperativo'),
                 btnGuardarModalCodigos: $('btnGuardarModalCodigos'),
                 formVariedad: $('formVariedad'),
                 variedadId: $('variedadId'),
@@ -787,6 +810,29 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
                 ui.modalCodigosVariedades.setAttribute('inert', '');
             }
 
+            function abrirModalNuevoOperativoRelevamiento() {
+                lastFocusedElement = document.activeElement;
+                ui.modalNuevoOperativoRelevamiento.removeAttribute('inert');
+                ui.modalNuevoOperativoRelevamiento.classList.add('active');
+                ui.modalNuevoOperativoRelevamiento.setAttribute('aria-hidden', 'false');
+                setTimeout(() => {
+                    ui.btnCerrarModalNuevoOperativo.focus();
+                }, 0);
+            }
+
+            function cerrarModalNuevoOperativoRelevamiento() {
+                if (ui.modalNuevoOperativoRelevamiento.contains(document.activeElement)) {
+                    if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+                        lastFocusedElement.focus();
+                    } else {
+                        ui.btnNuevoOperativoRelevamiento.focus();
+                    }
+                }
+                ui.modalNuevoOperativoRelevamiento.classList.remove('active');
+                ui.modalNuevoOperativoRelevamiento.setAttribute('aria-hidden', 'true');
+                ui.modalNuevoOperativoRelevamiento.setAttribute('inert', '');
+            }
+
             function setMsgVariedades(msg, type) {
                 ui.msgVariedades.className = 'variedades-msg' + (type ? (' ' + type) : '');
                 ui.msgVariedades.textContent = msg || '';
@@ -889,8 +935,11 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
             });
 
             ui.btnCodigosVariedades.addEventListener('click', abrirModalCodigosVariedades);
+            ui.btnNuevoOperativoRelevamiento.addEventListener('click', abrirModalNuevoOperativoRelevamiento);
             ui.btnCerrarModalCodigosX.addEventListener('click', cerrarModalCodigosVariedades);
             ui.btnCerrarModalCodigos.addEventListener('click', cerrarModalCodigosVariedades);
+            ui.btnCerrarModalNuevoOperativoX.addEventListener('click', cerrarModalNuevoOperativoRelevamiento);
+            ui.btnCerrarModalNuevoOperativo.addEventListener('click', cerrarModalNuevoOperativoRelevamiento);
             ui.btnGuardarModalCodigos.addEventListener('click', guardarVariedad);
             ui.formVariedad.addEventListener('submit', (ev) => {
                 ev.preventDefault();
@@ -946,9 +995,18 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
                 }
             });
 
+            ui.modalNuevoOperativoRelevamiento.addEventListener('click', (ev) => {
+                if (ev.target === ui.modalNuevoOperativoRelevamiento) {
+                    cerrarModalNuevoOperativoRelevamiento();
+                }
+            });
+
             document.addEventListener('keydown', (ev) => {
                 if (ev.key === 'Escape' && ui.modalCodigosVariedades.classList.contains('active')) {
                     cerrarModalCodigosVariedades();
+                }
+                if (ev.key === 'Escape' && ui.modalNuevoOperativoRelevamiento.classList.contains('active')) {
+                    cerrarModalNuevoOperativoRelevamiento();
                 }
             });
 
