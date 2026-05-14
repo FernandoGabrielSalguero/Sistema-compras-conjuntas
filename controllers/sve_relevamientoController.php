@@ -151,6 +151,14 @@ try {
         ]);
     }
 
+    if ($action === 'relevamiento_operativo_avance') {
+        $id = (int)($_GET['id'] ?? $_POST['id'] ?? 0);
+        jsonResponse(200, [
+            'ok' => true,
+            'data' => $model->calcularAvanceOperativoRelevamiento($id),
+        ]);
+    }
+
     if ($action === 'relevamiento_operativo_create') {
         $nombre = trim((string)($_POST['nombre'] ?? ''));
         $fechaInicio = trim((string)($_POST['fecha_inicio'] ?? ''));

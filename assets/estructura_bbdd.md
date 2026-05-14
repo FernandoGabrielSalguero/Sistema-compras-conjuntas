@@ -867,6 +867,25 @@ created_at	timestamp	NO		current_timestamp()
 Columna finca_id referencia a prod_fincas.id
 Columna productor_id referencia a usuarios.id
 🔁 Relaciones (entrantes): prod_fincas, usuarios
+📄 Tabla: relevamiento_cambios
+Columna	Tipo	Nulo	Clave	Default	Extra
+id	bigint(20) unsigned	NO	PRI		auto_increment
+operativo_id	int(11)	NO	MUL		
+ingeniero_id_real	varchar(20)	YES	MUL		
+usuario_id_real	varchar(20)	YES			
+usuario_rol	varchar(30)	YES			
+productor_id_real	varchar(20)	YES	MUL		
+finca_id	int(10) unsigned	YES	MUL		
+cuartel_id	int(10) unsigned	YES	MUL		
+tabla	varchar(100)	NO	MUL		
+campo	varchar(100)	NO			
+valor_anterior	text	YES			
+valor_nuevo	text	YES			
+created_at	timestamp	NO		current_timestamp()	
+
+🔗 Relaciones (salientes):
+Columna operativo_id referencia a relevamiento_operativos.id
+🔁 Relaciones (entrantes): relevamiento_operativos
 📄 Tabla: relevamiento_fincas
 Columna	Tipo	Nulo	Clave	Default	Extra
 id	bigint(20) unsigned	NO	PRI		auto_increment
@@ -891,6 +910,34 @@ updated_at	timestamp	YES		current_timestamp()	on update current_timestamp()
 Columna finca_id referencia a prod_fincas.id
 Columna productor_id referencia a usuarios.id
 🔁 Relaciones (entrantes): prod_fincas, usuarios
+📄 Tabla: relevamiento_operativo_campos
+Columna	Tipo	Nulo	Clave	Default	Extra
+id	int(11)	NO	PRI		auto_increment
+operativo_id	int(11)	NO	MUL		
+tabla	varchar(100)	NO			
+campo	varchar(100)	NO			
+etiqueta	varchar(160)	NO			
+grupo	varchar(100)	NO			
+alcance	enum('productor','finca','cuartel')	NO	MUL		
+obligatorio	tinyint(1)	NO		0	
+orden	int(11)	NO		0	
+created_at	timestamp	NO		current_timestamp()	
+
+🔗 Relaciones (salientes):
+Columna operativo_id referencia a relevamiento_operativos.id
+🔁 Relaciones (entrantes): relevamiento_operativos
+📄 Tabla: relevamiento_operativos
+Columna	Tipo	Nulo	Clave	Default	Extra
+id	int(11)	NO	PRI		auto_increment
+nombre	varchar(255)	NO			
+fecha_inicio	date	NO	MUL		
+fecha_fin	date	NO			
+estado	enum('borrador','abierto','cerrado')	NO	MUL	borrador	
+created_by_real	varchar(20)	YES	MUL		
+created_at	timestamp	NO		current_timestamp()	
+updated_at	timestamp	YES		current_timestamp()	on update current_timestamp()
+
+🔁 Relaciones (entrantes): relevamiento_operativo_campos, relevamiento_cambios
 📄 Tabla: serviciosVendimiales_centrifugadores
 Columna	Tipo	Nulo	Clave	Default	Extra
 id	bigint(20) unsigned	NO	PRI		auto_increment

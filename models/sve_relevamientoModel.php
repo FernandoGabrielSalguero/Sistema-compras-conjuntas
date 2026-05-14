@@ -730,6 +730,418 @@ final class SveRelevamientoModel
     }
 
     /**
+     * @return array<string, mixed>
+     */
+    public function calcularAvanceOperativoRelevamiento(int $operativoId): array
+    {
+        $operativo = $this->obtenerOperativoRelevamiento($operativoId);
+        $campos = $operativo['campos'] ?? [];
+
+        if (empty($campos)) {
+            return [
+                'operativo' => $operativo,
+                'ingenieros' => [],
+                'totales' => $this->emptyAvanceTotals(),
+            ];
+        }
+
+        $stmt = $this->pdo->query("
+            SELECT
+                u.id_real,
+                COALESCE(NULLIF(TRIM(ui.nombre), ''), NULLIF(TRIM(u.razon_social), ''), NULLIF(TRIM(u.usuario), ''), u.id_real) AS nombre
+            FROM usuarios u
+            LEFT JOIN usuarios_info ui
+                ON ui.usuario_id = u.id
+            WHERE u.rol = 'ingeniero'
+            ORDER BY nombre ASC
+        ");
+        $ingenieros = $stmt->fetchAll() ?: [];
+
+        $rows = [];
+        $totales = $this->emptyAvanceTotals();
+
+        foreach ($ingenieros as $ingeniero) {
+            $ingenieroIdReal = (string)($ingeniero['id_real'] ?? '');
+            if ($ingenieroIdReal === '') {
+                continue;
+            }
+
+            $entities = $this->obtenerEntidadesIngenieroParaAvance($ingenieroIdReal);
+            $expected = 0;
+            $completed = 0;
+
+            foreach ($campos as $campo) {
+                $alcance = (string)($campo['alcance'] ?? '');
+                if ($alcance === 'productor') {
+                    $expected += count($entities['productor_ids_real']);
+                } elseif ($alcance === 'finca') {
+                    $expected += count($entities['finca_ids']);
+                } elseif ($alcance === 'cuartel') {
+                    $expected += count($entities['cuartel_ids']);
+                }
+
+                $completed += $this->contarCampoCompletoParaIngeniero($campo, $entities);
+            }
+
+            $activity = $this->contarActividadOperativoIngeniero($operativoId, $ingenieroIdReal, $campos, $entities);
+            $completionPct = $expected > 0 ? round(($completed / $expected) * 100, 2) : 0.0;
+            $activityPct = $expected > 0 ? round(($activity / $expected) * 100, 2) : 0.0;
+
+            $row = [
+                'ingeniero_id_real' => $ingenieroIdReal,
+                'ingeniero_nombre' => $ingeniero['nombre'] ?? $ingenieroIdReal,
+                'cooperativas' => count($entities['coop_ids_real']),
+                'productores' => count($entities['productor_ids_real']),
+                'fincas' => count($entities['finca_ids']),
+                'cuarteles' => count($entities['cuartel_ids']),
+                'campos_esperados' => $expected,
+                'campos_completos' => $completed,
+                'campos_auditados' => $activity,
+                'completitud_pct' => $completionPct,
+                'actividad_pct' => $activityPct,
+            ];
+
+            $rows[] = $row;
+            $totales['cooperativas'] += $row['cooperativas'];
+            $totales['productores'] += $row['productores'];
+            $totales['fincas'] += $row['fincas'];
+            $totales['cuarteles'] += $row['cuarteles'];
+            $totales['campos_esperados'] += $expected;
+            $totales['campos_completos'] += $completed;
+            $totales['campos_auditados'] += $activity;
+        }
+
+        $totales['completitud_pct'] = $totales['campos_esperados'] > 0
+            ? round(($totales['campos_completos'] / $totales['campos_esperados']) * 100, 2)
+            : 0.0;
+        $totales['actividad_pct'] = $totales['campos_esperados'] > 0
+            ? round(($totales['campos_auditados'] / $totales['campos_esperados']) * 100, 2)
+            : 0.0;
+
+        return [
+            'operativo' => $operativo,
+            'ingenieros' => $rows,
+            'totales' => $totales,
+        ];
+    }
+
+    /**
+     * @return array<string, int|float>
+     */
+    private function emptyAvanceTotals(): array
+    {
+        return [
+            'cooperativas' => 0,
+            'productores' => 0,
+            'fincas' => 0,
+            'cuarteles' => 0,
+            'campos_esperados' => 0,
+            'campos_completos' => 0,
+            'campos_auditados' => 0,
+            'completitud_pct' => 0.0,
+            'actividad_pct' => 0.0,
+        ];
+    }
+
+    /**
+     * @return array<string, array<int, mixed>>
+     */
+    private function obtenerEntidadesIngenieroParaAvance(string $ingenieroIdReal): array
+    {
+        $coopIds = $this->fetchColumnList(
+            "SELECT cooperativa_id_real FROM rel_coop_ingeniero WHERE ingeniero_id_real = ? ORDER BY cooperativa_id_real ASC",
+            [$ingenieroIdReal]
+        );
+
+        $productorRows = [];
+        if (!empty($coopIds)) {
+            $in = $this->placeholders($coopIds);
+            $stmt = $this->pdo->prepare("
+                SELECT DISTINCT u.id, u.id_real
+                FROM rel_productor_coop rpc
+                JOIN usuarios u
+                    ON u.id_real = rpc.productor_id_real
+                   AND u.rol = 'productor'
+                WHERE rpc.cooperativa_id_real IN ($in)
+                  AND COALESCE(u.archivado, 0) = 0
+                ORDER BY u.id_real ASC
+            ");
+            $stmt->execute($coopIds);
+            $productorRows = $stmt->fetchAll() ?: [];
+        }
+
+        $productorIdsReal = array_values(array_unique(array_map(static fn($row) => (string)$row['id_real'], $productorRows)));
+        $productorIds = array_values(array_unique(array_map(static fn($row) => (int)$row['id'], $productorRows)));
+
+        $fincaIds = [];
+        if (!empty($productorIdsReal)) {
+            $in = $this->placeholders($productorIdsReal);
+            $fincaIds = array_map('intval', $this->fetchColumnList("
+                SELECT id
+                FROM prod_fincas
+                WHERE productor_id_real IN ($in)
+                  AND COALESCE(archivado, 0) = 0
+            ", $productorIdsReal));
+        }
+
+        $cuartelIds = [];
+        if (!empty($productorIdsReal)) {
+            $params = $productorIdsReal;
+            $inProductores = $this->placeholders($productorIdsReal);
+            $sql = "
+                SELECT DISTINCT pc.id
+                FROM prod_cuartel pc
+                LEFT JOIN prod_fincas pf
+                    ON pf.id = pc.finca_id
+                WHERE (pc.id_responsable_real IN ($inProductores)
+                   OR pf.productor_id_real IN ($inProductores))
+                  AND COALESCE(pc.archivado, 0) = 0
+            ";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute(array_merge($params, $params));
+            $cuartelIds = array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN) ?: []);
+        }
+
+        return [
+            'coop_ids_real' => $coopIds,
+            'productor_ids_real' => $productorIdsReal,
+            'productor_ids' => $productorIds,
+            'finca_ids' => array_values(array_unique($fincaIds)),
+            'cuartel_ids' => array_values(array_unique($cuartelIds)),
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $campo
+     * @param array<string, array<int, mixed>> $entities
+     */
+    private function contarCampoCompletoParaIngeniero(array $campo, array $entities): int
+    {
+        $tabla = (string)($campo['tabla'] ?? '');
+        $field = (string)($campo['campo'] ?? '');
+        $alcance = (string)($campo['alcance'] ?? '');
+
+        if ($field === '') {
+            return 0;
+        }
+
+        if ($alcance === 'productor') {
+            return $this->contarCampoProductorCompleto($tabla, $field, $entities['productor_ids_real'], $entities['productor_ids']);
+        }
+        if ($alcance === 'finca') {
+            return $this->contarCampoFincaCompleto($tabla, $field, $entities['finca_ids']);
+        }
+        if ($alcance === 'cuartel') {
+            return $this->contarCampoCuartelCompleto($tabla, $field, $entities['cuartel_ids']);
+        }
+
+        return 0;
+    }
+
+    /**
+     * @param array<int, string> $productorIdsReal
+     * @param array<int, int> $productorIds
+     */
+    private function contarCampoProductorCompleto(string $tabla, string $field, array $productorIdsReal, array $productorIds): int
+    {
+        if ($tabla === 'usuarios') {
+            return $this->countDistinctWithIn('usuarios', 'id_real', 'id_real', $productorIdsReal, $field, "rol = 'productor'");
+        }
+        if ($tabla === 'usuarios_info') {
+            return $this->countJoinedUsuarioTable('usuarios_info', $field, $productorIdsReal, 'usuario_id', false);
+        }
+        if ($tabla === 'productores_contactos_alternos') {
+            return $this->countJoinedUsuarioTable('productores_contactos_alternos', $field, $productorIdsReal, 'productor_id', false);
+        }
+        if (in_array($tabla, ['info_productor', 'prod_colaboradores', 'prod_hijos'], true)) {
+            return $this->countJoinedUsuarioTable($tabla, $field, $productorIdsReal, 'productor_id', true);
+        }
+
+        return 0;
+    }
+
+    /**
+     * @param array<int, int> $fincaIds
+     */
+    private function contarCampoFincaCompleto(string $tabla, string $field, array $fincaIds): int
+    {
+        if ($tabla === 'prod_fincas') {
+            return $this->countDistinctWithIn('prod_fincas', 'id', 'id', $fincaIds, $field, "COALESCE(archivado, 0) = 0");
+        }
+        if ($tabla === 'prod_finca_direccion') {
+            return $this->countDistinctWithIn($tabla, 'finca_id', 'finca_id', $fincaIds, $field);
+        }
+        if (in_array($tabla, ['prod_finca_superficie', 'prod_finca_cultivos', 'prod_finca_agua', 'prod_finca_maquinaria', 'prod_finca_gerencia'], true)) {
+            return $this->countDistinctWithIn($tabla, 'finca_id', 'finca_id', $fincaIds, $field, $this->latestCondition($tabla, 'finca_id'));
+        }
+
+        return 0;
+    }
+
+    /**
+     * @param array<int, int> $cuartelIds
+     */
+    private function contarCampoCuartelCompleto(string $tabla, string $field, array $cuartelIds): int
+    {
+        if ($tabla === 'prod_cuartel') {
+            return $this->countDistinctWithIn('prod_cuartel', 'id', 'id', $cuartelIds, $field, "COALESCE(archivado, 0) = 0");
+        }
+        if (in_array($tabla, ['prod_cuartel_limitantes', 'prod_cuartel_rendimientos', 'prod_cuartel_riesgos'], true)) {
+            return $this->countDistinctWithIn($tabla, 'cuartel_id', 'cuartel_id', $cuartelIds, $field);
+        }
+
+        return 0;
+    }
+
+    /**
+     * @param array<int, mixed> $ids
+     */
+    private function countDistinctWithIn(string $table, string $distinctColumn, string $whereColumn, array $ids, string $field, string $extraWhere = ''): int
+    {
+        if (empty($ids)) {
+            return 0;
+        }
+
+        $in = $this->placeholders($ids);
+        $quotedField = $this->quoteIdentifier($field);
+        $where = "t." . $this->quoteIdentifier($whereColumn) . " IN ($in) AND " . $this->notEmptyCondition('t', $quotedField);
+        if ($extraWhere !== '') {
+            $where .= " AND {$extraWhere}";
+        }
+
+        $sql = "SELECT COUNT(DISTINCT t." . $this->quoteIdentifier($distinctColumn) . ") FROM {$table} t WHERE {$where}";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($ids);
+        return (int)($stmt->fetchColumn() ?: 0);
+    }
+
+    /**
+     * @param array<int, string> $productorIdsReal
+     */
+    private function countJoinedUsuarioTable(string $table, string $field, array $productorIdsReal, string $joinColumn, bool $latest): int
+    {
+        if (empty($productorIdsReal)) {
+            return 0;
+        }
+
+        $in = $this->placeholders($productorIdsReal);
+        $quotedField = $this->quoteIdentifier($field);
+        $where = "u.id_real IN ($in) AND " . $this->notEmptyCondition('t', $quotedField);
+        if ($latest) {
+            $where .= " AND " . $this->latestCondition($table, $joinColumn);
+        }
+
+        $sql = "
+            SELECT COUNT(DISTINCT u.id_real)
+            FROM usuarios u
+            JOIN {$table} t
+                ON t." . $this->quoteIdentifier($joinColumn) . " = u.id
+            WHERE {$where}
+        ";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($productorIdsReal);
+        return (int)($stmt->fetchColumn() ?: 0);
+    }
+
+    private function notEmptyCondition(string $alias, string $quotedField): string
+    {
+        return "{$alias}.{$quotedField} IS NOT NULL AND TRIM(CAST({$alias}.{$quotedField} AS CHAR)) <> ''";
+    }
+
+    private function latestCondition(string $table, string $ownerColumn): string
+    {
+        $owner = $this->quoteIdentifier($ownerColumn);
+        return "NOT EXISTS (
+            SELECT 1
+            FROM {$table} t2
+            WHERE t2.{$owner} = t.{$owner}
+              AND (t2.anio > t.anio OR (t2.anio = t.anio AND t2.id > t.id))
+        )";
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $campos
+     * @param array<string, array<int, mixed>> $entities
+     */
+    private function contarActividadOperativoIngeniero(int $operativoId, string $ingenieroIdReal, array $campos, array $entities): int
+    {
+        $fieldScope = [];
+        foreach ($campos as $campo) {
+            $fieldScope[$campo['tabla'] . '.' . $campo['campo']] = (string)$campo['alcance'];
+        }
+
+        $stmt = $this->pdo->prepare("
+            SELECT tabla, campo, productor_id_real, finca_id, cuartel_id
+            FROM relevamiento_cambios
+            WHERE operativo_id = :operativo_id
+              AND ingeniero_id_real = :ingeniero_id_real
+        ");
+        $stmt->execute([
+            ':operativo_id' => $operativoId,
+            ':ingeniero_id_real' => $ingenieroIdReal,
+        ]);
+
+        $productores = array_flip(array_map('strval', $entities['productor_ids_real']));
+        $fincas = array_flip(array_map('strval', $entities['finca_ids']));
+        $cuarteles = array_flip(array_map('strval', $entities['cuartel_ids']));
+        $seen = [];
+
+        foreach (($stmt->fetchAll() ?: []) as $row) {
+            $fieldKey = (string)$row['tabla'] . '.' . (string)$row['campo'];
+            if (!isset($fieldScope[$fieldKey])) {
+                continue;
+            }
+
+            $scope = $fieldScope[$fieldKey];
+            if ($scope === 'productor') {
+                $entity = (string)($row['productor_id_real'] ?? '');
+                if ($entity === '' || !isset($productores[$entity])) {
+                    continue;
+                }
+                $seen[$fieldKey . '|p|' . $entity] = true;
+            } elseif ($scope === 'finca') {
+                $entity = (string)($row['finca_id'] ?? '');
+                if ($entity === '' || !isset($fincas[$entity])) {
+                    continue;
+                }
+                $seen[$fieldKey . '|f|' . $entity] = true;
+            } elseif ($scope === 'cuartel') {
+                $entity = (string)($row['cuartel_id'] ?? '');
+                if ($entity === '' || !isset($cuarteles[$entity])) {
+                    continue;
+                }
+                $seen[$fieldKey . '|c|' . $entity] = true;
+            }
+        }
+
+        return count($seen);
+    }
+
+    /**
+     * @param array<int, mixed> $params
+     * @return array<int, mixed>
+     */
+    private function fetchColumnList(string $sql, array $params): array
+    {
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_COLUMN) ?: [];
+    }
+
+    /**
+     * @param array<int, mixed> $values
+     */
+    private function placeholders(array $values): string
+    {
+        return implode(',', array_fill(0, count($values), '?'));
+    }
+
+    private function quoteIdentifier(string $identifier): string
+    {
+        return '`' . str_replace('`', '``', $identifier) . '`';
+    }
+
+    /**
      * @param array<int, string> $fieldKeys
      * @return array<int, array<string, mixed>>
      */

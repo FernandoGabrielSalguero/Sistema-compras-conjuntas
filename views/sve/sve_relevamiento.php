@@ -467,8 +467,63 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
             margin: 0;
         }
 
+        .avance-toolbar {
+            display: grid;
+            grid-template-columns: minmax(240px, 1fr) auto;
+            gap: 0.75rem;
+            align-items: end;
+            margin-bottom: 0.8rem;
+        }
+
+        .avance-kpis {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 0.65rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .avance-kpi {
+            border: 1px solid rgba(15, 23, 42, 0.12);
+            border-radius: 0.55rem;
+            background: #fff;
+            padding: 0.65rem;
+        }
+
+        .avance-kpi small {
+            display: block;
+            color: #64748b;
+            margin-bottom: 0.2rem;
+        }
+
+        .avance-kpi strong {
+            color: #0f172a;
+            font-size: 1.15rem;
+        }
+
+        .avance-bar {
+            height: 0.45rem;
+            border-radius: 999px;
+            background: #e2e8f0;
+            overflow: hidden;
+            min-width: 96px;
+        }
+
+        .avance-bar span {
+            display: block;
+            height: 100%;
+            background: #5b21b6;
+        }
+
+        .avance-bar.activity span {
+            background: #047857;
+        }
+
         @media (max-width: 720px) {
             .operativo-stepper {
+                grid-template-columns: 1fr;
+            }
+
+            .avance-toolbar {
                 grid-template-columns: 1fr;
             }
         }
@@ -836,20 +891,38 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
                 </section>
 
                 <section class="operativo-step-panel" data-operativo-panel="3" hidden>
-                    <div class="operativo-plan">
-                        <div class="operativo-plan-item">
-                            <h4>Definir unidad de avance</h4>
-                            <p>Necesitamos acordar si el progreso se mide por productor, por finca/cuartel o por campo completado del operativo.</p>
+                    <div class="avance-toolbar">
+                        <div class="input-group" style="margin:0;">
+                            <label for="avanceOperativoSelect">Operativo</label>
+                            <div class="input-icon">
+                                <span class="material-icons">assignment</span>
+                                <select id="avanceOperativoSelect">
+                                    <option value="">Seleccionar operativo</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="operativo-plan-item">
-                            <h4>Asignacion indirecta</h4>
-                            <p>El calculo deberia cruzar ingenieros, cooperativas asociadas y productores de esas cooperativas para cada operativo.</p>
-                        </div>
-                        <div class="operativo-plan-item">
-                            <h4>Auditoria de cambios</h4>
-                            <p>Para medir modificacion real por operativo probablemente conviene registrar snapshots o logs de campos completados.</p>
-                        </div>
+                        <button type="button" class="btn-mini" id="btnRefrescarAvanceOperativo">Actualizar avance</button>
                     </div>
+                    <div id="avanceKpis" class="avance-kpis"></div>
+                    <div class="operativo-table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Ingeniero</th>
+                                    <th>Coops</th>
+                                    <th>Productores</th>
+                                    <th>Fincas</th>
+                                    <th>Cuarteles</th>
+                                    <th>Completitud</th>
+                                    <th>Actividad</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaAvanceOperativoBody">
+                                <tr><td colspan="7">Selecciona un operativo para ver el avance.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="msgAvanceOperativo" class="operativo-msg"></div>
                 </section>
             </div>
             <div class="sve-modal-footer">
@@ -894,6 +967,7 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
                 btnSeleccionarTodosCampos: $('btnSeleccionarTodosCampos'),
                 btnLimpiarCamposOperativo: $('btnLimpiarCamposOperativo'),
                 btnRefrescarOperativos: $('btnRefrescarOperativos'),
+                btnRefrescarAvanceOperativo: $('btnRefrescarAvanceOperativo'),
                 btnGuardarModalCodigos: $('btnGuardarModalCodigos'),
                 formVariedad: $('formVariedad'),
                 formNuevoOperativoRelevamiento: $('formNuevoOperativoRelevamiento'),
@@ -906,6 +980,10 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
                 msgNuevoOperativo: $('msgNuevoOperativo'),
                 tablaOperativosBody: $('tablaOperativosBody'),
                 msgOperativosListado: $('msgOperativosListado'),
+                avanceOperativoSelect: $('avanceOperativoSelect'),
+                avanceKpis: $('avanceKpis'),
+                tablaAvanceOperativoBody: $('tablaAvanceOperativoBody'),
+                msgAvanceOperativo: $('msgAvanceOperativo'),
                 variedadId: $('variedadId'),
                 codigoVariedad: $('codigoVariedad'),
                 nombreVariedad: $('nombreVariedad'),
@@ -1194,6 +1272,9 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
                 if (target === '2') {
                     cargarOperativosRelevamiento();
                 }
+                if (target === '3') {
+                    cargarOperativosParaAvance();
+                }
             }
 
             function limpiarFormNuevoOperativo() {
@@ -1406,6 +1487,111 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
                 }
             }
 
+            function setMsgAvanceOperativo(msg, type) {
+                ui.msgAvanceOperativo.className = 'operativo-msg' + (type ? (' ' + type) : '');
+                ui.msgAvanceOperativo.textContent = msg || '';
+            }
+
+            async function cargarOperativosParaAvance() {
+                try {
+                    const payload = await getJson({ action: 'relevamiento_operativos_list' });
+                    const rows = Array.isArray(payload.data) ? payload.data : [];
+                    const current = ui.avanceOperativoSelect.value;
+                    ui.avanceOperativoSelect.innerHTML = '<option value="">Seleccionar operativo</option>' + rows.map((row) => (
+                        `<option value="${escapeHtml(row.id)}">${escapeHtml(row.nombre)} (${escapeHtml(row.estado)})</option>`
+                    )).join('');
+                    if (current && rows.some((row) => String(row.id) === String(current))) {
+                        ui.avanceOperativoSelect.value = current;
+                    }
+                    if (ui.avanceOperativoSelect.value) {
+                        cargarAvanceOperativo();
+                    }
+                } catch (error) {
+                    setMsgAvanceOperativo(error.message, 'error');
+                }
+            }
+
+            function renderAvanceKpis(totales) {
+                const safe = totales || {};
+                ui.avanceKpis.innerHTML = `
+                    <div class="avance-kpi">
+                        <small>Campos esperados</small>
+                        <strong>${Number(safe.campos_esperados || 0)}</strong>
+                    </div>
+                    <div class="avance-kpi">
+                        <small>Campos completos</small>
+                        <strong>${Number(safe.campos_completos || 0)} (${Number(safe.completitud_pct || 0)}%)</strong>
+                    </div>
+                    <div class="avance-kpi">
+                        <small>Actividad auditada</small>
+                        <strong>${Number(safe.campos_auditados || 0)} (${Number(safe.actividad_pct || 0)}%)</strong>
+                    </div>
+                    <div class="avance-kpi">
+                        <small>Ingenieros / Productores</small>
+                        <strong>${Number(safe.ingenieros || 0)} / ${Number(safe.productores || 0)}</strong>
+                    </div>
+                `;
+            }
+
+            function progressCell(value, className) {
+                const pct = Math.max(0, Math.min(100, Number(value || 0)));
+                return `
+                    <div style="display:grid; gap:0.25rem;">
+                        <span>${pct}%</span>
+                        <div class="avance-bar ${className || ''}"><span style="width:${pct}%"></span></div>
+                    </div>
+                `;
+            }
+
+            function renderTablaAvance(rows) {
+                if (!Array.isArray(rows) || rows.length === 0) {
+                    ui.tablaAvanceOperativoBody.innerHTML = '<tr><td colspan="7">No hay ingenieros para mostrar.</td></tr>';
+                    return;
+                }
+
+                ui.tablaAvanceOperativoBody.innerHTML = rows.map((row) => `
+                    <tr>
+                        <td>${escapeHtml(row.ingeniero_nombre || row.ingeniero_id_real || '-')}</td>
+                        <td>${Number(row.cooperativas || 0)}</td>
+                        <td>${Number(row.productores || 0)}</td>
+                        <td>${Number(row.fincas || 0)}</td>
+                        <td>${Number(row.cuarteles || 0)}</td>
+                        <td>
+                            ${progressCell(row.completitud_pct, '')}
+                            <small>${Number(row.campos_completos || 0)} / ${Number(row.campos_esperados || 0)}</small>
+                        </td>
+                        <td>
+                            ${progressCell(row.actividad_pct, 'activity')}
+                            <small>${Number(row.campos_auditados || 0)} / ${Number(row.campos_esperados || 0)}</small>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            async function cargarAvanceOperativo() {
+                const id = ui.avanceOperativoSelect.value;
+                setMsgAvanceOperativo('', '');
+                ui.avanceKpis.innerHTML = '';
+
+                if (!id) {
+                    ui.tablaAvanceOperativoBody.innerHTML = '<tr><td colspan="7">Selecciona un operativo para ver el avance.</td></tr>';
+                    return;
+                }
+
+                ui.tablaAvanceOperativoBody.innerHTML = '<tr><td colspan="7">Calculando avance...</td></tr>';
+                try {
+                    const payload = await getJson({ action: 'relevamiento_operativo_avance', id });
+                    const data = payload.data || {};
+                    const totales = data.totales || {};
+                    totales.ingenieros = Array.isArray(data.ingenieros) ? data.ingenieros.length : 0;
+                    renderAvanceKpis(totales);
+                    renderTablaAvance(data.ingenieros || []);
+                } catch (error) {
+                    ui.tablaAvanceOperativoBody.innerHTML = `<tr><td colspan="7">${escapeHtml(error.message)}</td></tr>`;
+                    setMsgAvanceOperativo(error.message, 'error');
+                }
+            }
+
             function setMsgVariedades(msg, type) {
                 ui.msgVariedades.className = 'variedades-msg' + (type ? (' ' + type) : '');
                 ui.msgVariedades.textContent = msg || '';
@@ -1518,6 +1704,8 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
                 btn.addEventListener('click', () => activarPasoOperativo(btn.getAttribute('data-operativo-step')));
             });
             ui.btnRefrescarOperativos.addEventListener('click', cargarOperativosRelevamiento);
+            ui.btnRefrescarAvanceOperativo.addEventListener('click', cargarAvanceOperativo);
+            ui.avanceOperativoSelect.addEventListener('change', cargarAvanceOperativo);
             ui.btnSeleccionarTodosCampos.addEventListener('click', () => {
                 ui.operativoCamposWrap.querySelectorAll('input[name="operativo_campo"]').forEach((input) => {
                     input.checked = true;
