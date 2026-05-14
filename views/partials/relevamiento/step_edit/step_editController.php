@@ -41,17 +41,27 @@ try {
 
             case 'cooperativas':
                 $operativoId = (int)($_GET['operativo_id'] ?? 0);
-                stepEditJson(200, ['ok' => true, 'data' => $model->listarCooperativasConAvance($operativoId, $ingenieroIdReal)]);
+                stepEditJson(200, ['ok' => true, 'data' => $model->listarCooperativasLivianas($operativoId, $ingenieroIdReal)]);
 
             case 'productores':
                 $operativoId = (int)($_GET['operativo_id'] ?? 0);
                 $coopIdReal = (string)($_GET['coop_id_real'] ?? '');
-                stepEditJson(200, ['ok' => true, 'data' => $model->listarProductoresConAvance($operativoId, $coopIdReal, $ingenieroIdReal)]);
+                stepEditJson(200, ['ok' => true, 'data' => $model->listarProductoresLivianos($operativoId, $coopIdReal, $ingenieroIdReal)]);
 
             case 'form':
                 $operativoId = (int)($_GET['operativo_id'] ?? 0);
                 $productorIdReal = (string)($_GET['productor_id_real'] ?? '');
                 stepEditJson(200, ['ok' => true, 'data' => $model->obtenerFormularioProductor($operativoId, $productorIdReal, $ingenieroIdReal)]);
+
+            case 'avance_cooperativa':
+                $operativoId = (int)($_GET['operativo_id'] ?? 0);
+                $coopIdReal = (string)($_GET['coop_id_real'] ?? '');
+                stepEditJson(200, ['ok' => true, 'data' => $model->obtenerAvanceCooperativa($operativoId, $coopIdReal, $ingenieroIdReal)]);
+
+            case 'avance_productor':
+                $operativoId = (int)($_GET['operativo_id'] ?? 0);
+                $productorIdReal = (string)($_GET['productor_id_real'] ?? '');
+                stepEditJson(200, ['ok' => true, 'data' => $model->obtenerAvanceProductorPublico($operativoId, $productorIdReal, $ingenieroIdReal)]);
 
             case 'avance':
                 $operativoId = (int)($_GET['operativo_id'] ?? 0);

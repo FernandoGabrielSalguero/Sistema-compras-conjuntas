@@ -56,38 +56,29 @@ $stepEditBasePath = $appBasePath ?? '';
         font-size: .9rem;
     }
 
-    .step-edit-steps {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: .5rem;
-        padding: 12px 20px;
-        border-bottom: 1px solid rgba(148, 163, 184, .25);
-        background: #f8fafc;
-    }
-
-    .step-edit-step {
-        border: 1px solid rgba(148, 163, 184, .5);
-        border-radius: 8px;
-        background: #fff;
-        color: #334155;
-        min-height: 44px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: .4rem;
-        font-weight: 700;
-        cursor: pointer;
-    }
-
-    .step-edit-step.active {
-        background: #2563eb;
-        border-color: #2563eb;
-        color: #fff;
-    }
-
     .step-edit-body {
         overflow: auto;
         padding: 18px 20px 22px;
+    }
+
+    .step-edit-flowbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: .5rem;
+        margin-bottom: 1rem;
+    }
+
+    .step-edit-flowbar button {
+        display: inline-flex;
+        align-items: center;
+        gap: .25rem;
+    }
+
+    .step-edit-current {
+        color: rgba(15, 23, 42, .68);
+        font-weight: 700;
+        font-size: .88rem;
     }
 
     .step-edit-grid {
@@ -235,7 +226,6 @@ $stepEditBasePath = $appBasePath ?? '';
             max-height: 96vh;
         }
 
-        .step-edit-steps,
         .step-edit-progress-stack,
         .step-edit-grid,
         .step-edit-form-layout,
@@ -264,7 +254,6 @@ $stepEditBasePath = $appBasePath ?? '';
             padding: 14px;
         }
 
-        .step-edit-steps,
         .step-edit-body {
             padding-left: 14px;
             padding-right: 14px;
@@ -284,14 +273,8 @@ $stepEditBasePath = $appBasePath ?? '';
             </button>
         </div>
 
-        <div class="step-edit-steps">
-            <button type="button" class="step-edit-step active" data-step-edit-nav="operativos"><span class="material-symbols-outlined">assignment</span> Operativo</button>
-            <button type="button" class="step-edit-step" data-step-edit-nav="cooperativas"><span class="material-symbols-outlined">groups</span> Cooperativa</button>
-            <button type="button" class="step-edit-step" data-step-edit-nav="productores"><span class="material-symbols-outlined">person</span> Productor</button>
-            <button type="button" class="step-edit-step" data-step-edit-nav="edicion"><span class="material-symbols-outlined">edit_note</span> Edicion</button>
-        </div>
-
         <div class="step-edit-body">
+            <div id="step-edit-flowbar" class="step-edit-flowbar"></div>
             <div id="step-edit-progress" class="step-edit-progress-stack"></div>
             <div id="step-edit-content"></div>
         </div>
@@ -313,6 +296,7 @@ $stepEditBasePath = $appBasePath ?? '';
         const modal = () => document.getElementById('step-edit-modal');
         const content = () => document.getElementById('step-edit-content');
         const progress = () => document.getElementById('step-edit-progress');
+        const flowbar = () => document.getElementById('step-edit-flowbar');
         const subtitle = () => document.getElementById('step-edit-subtitle');
 
         function escapeHtml(value) {
@@ -371,9 +355,18 @@ $stepEditBasePath = $appBasePath ?? '';
 
         function setStep(step) {
             state.step = step;
-            document.querySelectorAll('[data-step-edit-nav]').forEach((btn) => {
-                btn.classList.toggle('active', btn.dataset.stepEditNav === step);
-            });
+            renderFlowbar();
+        }
+
+        function renderFlowbar() {
+            const items = [];
+            if (state.step !== 'operativos') {
+                items.push(`<button type="button" class="btn-icon" data-step-edit-back title="Volver" aria-label="Volver"><span class="material-symbols-outlined">arrow_back</span></button>`);
+            }
+            if (state.operativo) items.push(`<span class="step-edit-current">${escapeHtml(state.operativo.nombre)}</span>`);
+            if (state.coop) items.push(`<span class="step-edit-muted">/ ${escapeHtml(state.coop.nombre)}</span>`);
+            if (state.productor) items.push(`<span class="step-edit-muted">/ ${escapeHtml(state.productor.nombre)}</span>`);
+            flowbar().innerHTML = items.join('');
         }
 
         function renderLoading(text) {
@@ -407,6 +400,7 @@ $stepEditBasePath = $appBasePath ?? '';
             state.form = null;
             subtitle().textContent = 'Selecciona un operativo abierto para empezar.';
             progress().innerHTML = '';
+            renderFlowbar();
             renderLoading('Cargando operativos abiertos...');
 
             const operativos = await apiGet('operativos');
@@ -441,8 +435,10 @@ $stepEditBasePath = $appBasePath ?? '';
             state.productor = null;
             state.form = null;
             subtitle().textContent = state.operativo.nombre;
+            renderFlowbar();
             renderLoading('Cargando cooperativas asociadas...');
-            await renderTopProgress();
+            progress().innerHTML = '<div class="step-edit-empty">Calculando avance general...</div>';
+            renderTopProgress();
 
             const coops = await apiGet('cooperativas', { operativo_id: state.operativo.id });
             if (!coops.length) {
@@ -454,10 +450,10 @@ $stepEditBasePath = $appBasePath ?? '';
                 <article class="step-edit-list-card" data-coop-id="${escapeHtml(coop.id_real)}">
                     <div class="step-edit-list-title">
                         <span>${escapeHtml(coop.nombre)}</span>
-                        <span>${pct(coop.avance?.completitud_pct).toFixed(0)}%</span>
+                        <span data-coop-pct="${escapeHtml(coop.id_real)}">--</span>
                     </div>
                     <div class="step-edit-muted">${Number(coop.productores_count || 0)} productores · ${escapeHtml(coop.cuit || 'Sin CUIT')}</div>
-                    <div class="step-edit-progress"><span style="width:${pct(coop.avance?.completitud_pct)}%"></span></div>
+                    <div class="step-edit-progress"><span data-coop-bar="${escapeHtml(coop.id_real)}" style="width:0%"></span></div>
                 </article>
             `).join('')}</div>`;
 
@@ -468,6 +464,7 @@ $stepEditBasePath = $appBasePath ?? '';
                     loadProductores();
                 });
             });
+            hydrateCooperativasProgress(coops);
         }
 
         async function loadProductores() {
@@ -477,8 +474,8 @@ $stepEditBasePath = $appBasePath ?? '';
             state.productor = null;
             state.form = null;
             subtitle().textContent = `${state.operativo.nombre} · ${state.coop.nombre}`;
+            renderFlowbar();
             renderLoading('Cargando productores...');
-            await renderTopProgress();
 
             const productores = await apiGet('productores', { operativo_id: state.operativo.id, coop_id_real: state.coop.id_real });
             if (!productores.length) {
@@ -490,11 +487,11 @@ $stepEditBasePath = $appBasePath ?? '';
                 <article class="step-edit-list-card" data-prod-id="${escapeHtml(prod.id_real)}">
                     <div class="step-edit-list-title">
                         <span>${escapeHtml(prod.nombre)}</span>
-                        <span>${pct(prod.avance?.completitud_pct).toFixed(0)}%</span>
+                        <span data-prod-pct="${escapeHtml(prod.id_real)}">--</span>
                     </div>
                     <div class="step-edit-muted">${escapeHtml(prod.id_real)} · ${escapeHtml(prod.cuit || 'Sin CUIT')}</div>
-                    <div class="step-edit-progress"><span style="width:${pct(prod.avance?.completitud_pct)}%"></span></div>
-                    <div class="step-edit-muted" style="margin-top:.4rem;">Pendientes: ${Number(prod.avance?.pendientes || 0)}</div>
+                    <div class="step-edit-progress"><span data-prod-bar="${escapeHtml(prod.id_real)}" style="width:0%"></span></div>
+                    <div class="step-edit-muted" data-prod-pending="${escapeHtml(prod.id_real)}" style="margin-top:.4rem;">Calculando avance...</div>
                 </article>
             `).join('')}</div>`;
 
@@ -505,6 +502,53 @@ $stepEditBasePath = $appBasePath ?? '';
                     loadForm();
                 });
             });
+            hydrateProductoresProgress(productores);
+        }
+
+        async function hydrateCooperativasProgress(coops) {
+            for (const coop of coops) {
+                if (state.step !== 'cooperativas') return;
+                try {
+                    const avance = await apiGet('avance_cooperativa', {
+                        operativo_id: state.operativo.id,
+                        coop_id_real: coop.id_real
+                    });
+                    coop.avance = avance;
+                    const id = cssEscape(String(coop.id_real));
+                    const pctEl = content().querySelector(`[data-coop-pct="${id}"]`);
+                    const barEl = content().querySelector(`[data-coop-bar="${id}"]`);
+                    if (pctEl) pctEl.textContent = `${pct(avance.completitud_pct).toFixed(0)}%`;
+                    if (barEl) barEl.style.width = `${pct(avance.completitud_pct)}%`;
+                } catch (e) {
+                    console.warn('[StepEdit] avance cooperativa', e);
+                }
+            }
+        }
+
+        async function hydrateProductoresProgress(productores) {
+            const queue = [...productores];
+            const workers = Array.from({ length: Math.min(3, queue.length) }, async () => {
+                while (queue.length && state.step === 'productores') {
+                    const prod = queue.shift();
+                    try {
+                        const avance = await apiGet('avance_productor', {
+                            operativo_id: state.operativo.id,
+                            productor_id_real: prod.id_real
+                        });
+                        prod.avance = avance;
+                        const id = cssEscape(String(prod.id_real));
+                        const pctEl = content().querySelector(`[data-prod-pct="${id}"]`);
+                        const barEl = content().querySelector(`[data-prod-bar="${id}"]`);
+                        const pendingEl = content().querySelector(`[data-prod-pending="${id}"]`);
+                        if (pctEl) pctEl.textContent = `${pct(avance.completitud_pct).toFixed(0)}%`;
+                        if (barEl) barEl.style.width = `${pct(avance.completitud_pct)}%`;
+                        if (pendingEl) pendingEl.textContent = `Pendientes: ${Number(avance.pendientes || 0)}`;
+                    } catch (e) {
+                        console.warn('[StepEdit] avance productor', e);
+                    }
+                }
+            });
+            await Promise.all(workers);
         }
 
         function fieldsByScope(scope) {
@@ -550,12 +594,66 @@ $stepEditBasePath = $appBasePath ?? '';
             `;
         }
 
+        function isFilledValue(value) {
+            return String(value ?? '').trim() !== '';
+        }
+
+        function computeFormProgressFromData() {
+            if (!state.form) return { esperados: 0, completos: 0, auditados: 0, pendientes: 0, completitud_pct: 0, actividad_pct: 0 };
+            const campos = state.form.campos || [];
+            const fincas = state.form.fincas || [];
+            const cuarteles = state.form.cuarteles || [];
+            let esperados = 0;
+            let completos = 0;
+
+            campos.forEach((campo) => {
+                if (campo.alcance === 'productor') {
+                    esperados++;
+                    if (isFilledValue(valueFor('productor', '', campo.key))) completos++;
+                } else if (campo.alcance === 'finca') {
+                    fincas.forEach((finca) => {
+                        esperados++;
+                        if (isFilledValue(valueFor('finca', finca.id, campo.key))) completos++;
+                    });
+                } else if (campo.alcance === 'cuartel') {
+                    cuarteles.forEach((cuartel) => {
+                        esperados++;
+                        if (isFilledValue(valueFor('cuartel', cuartel.id, campo.key))) completos++;
+                    });
+                }
+            });
+
+            return {
+                esperados,
+                completos,
+                auditados: 0,
+                pendientes: Math.max(0, esperados - completos),
+                completitud_pct: esperados > 0 ? (completos / esperados) * 100 : 0,
+                actividad_pct: 0
+            };
+        }
+
+        function computeFormProgressFromInputs() {
+            const inputs = Array.from(content().querySelectorAll('[data-step-field]'));
+            const esperados = inputs.length;
+            const completos = inputs.filter((input) => isFilledValue(input.value)).length;
+            return {
+                esperados,
+                completos,
+                auditados: 0,
+                pendientes: Math.max(0, esperados - completos),
+                completitud_pct: esperados > 0 ? (completos / esperados) * 100 : 0,
+                actividad_pct: 0
+            };
+        }
+
         function renderForm() {
             const productorFields = fieldsByScope('productor');
             const fincaFields = fieldsByScope('finca');
             const cuartelFields = fieldsByScope('cuartel');
             const fincas = state.form?.fincas || [];
             const cuarteles = state.form?.cuarteles || [];
+            state.form.avance = computeFormProgressFromData();
 
             const formHtml = `
                 ${fieldGroup('Datos del productor', productorFields, 'productor')}
@@ -585,8 +683,8 @@ $stepEditBasePath = $appBasePath ?? '';
             if (!state.productor) return loadProductores();
             setStep('edicion');
             subtitle().textContent = `${state.operativo.nombre} · ${state.productor.nombre}`;
+            renderFlowbar();
             renderLoading('Cargando campos del operativo...');
-            await renderTopProgress();
             state.form = await apiGet('form', { operativo_id: state.operativo.id, productor_id_real: state.productor.id_real });
             renderForm();
         }
@@ -604,13 +702,13 @@ $stepEditBasePath = $appBasePath ?? '';
                 el.textContent = 'Guardando...';
             }
             clearTimeout(state.saveTimers.get(key));
-            state.saveTimers.set(key, setTimeout(() => saveField(input), 450));
+            state.saveTimers.set(key, setTimeout(() => saveField(input), 900));
         }
 
         async function saveField(input) {
             const el = saveStateEl(input);
             try {
-                const data = await apiPost({
+                await apiPost({
                     action: 'save_field',
                     operativo_id: state.operativo.id,
                     productor_id_real: state.productor.id_real,
@@ -620,12 +718,11 @@ $stepEditBasePath = $appBasePath ?? '';
                     entity_id: input.dataset.entityId || 0,
                     value: input.value
                 });
-                state.form.avance = data.avance;
+                state.form.avance = computeFormProgressFromInputs();
                 if (el) {
                     el.className = 'step-edit-save-state ok';
                     el.textContent = 'Guardado';
                 }
-                await renderTopProgress();
                 const side = content().querySelector('.step-edit-side');
                 if (side) {
                     side.innerHTML = `${progressBar(state.form.avance, 'Productor')}${state.coop?.avance ? progressBar(state.coop.avance, 'Cooperativa') : ''}`;
@@ -652,13 +749,15 @@ $stepEditBasePath = $appBasePath ?? '';
         }
 
         document.addEventListener('click', (ev) => {
-            const nav = ev.target.closest?.('[data-step-edit-nav]');
-            if (!nav) return;
-            const step = nav.dataset.stepEditNav;
-            if (step === 'operativos') loadOperativos();
-            if (step === 'cooperativas' && state.operativo) loadCooperativas();
-            if (step === 'productores' && state.operativo && state.coop) loadProductores();
-            if (step === 'edicion' && state.operativo && state.productor) loadForm();
+            const back = ev.target.closest?.('[data-step-edit-back]');
+            if (!back) return;
+            if (state.step === 'edicion') {
+                loadProductores();
+            } else if (state.step === 'productores') {
+                loadCooperativas();
+            } else if (state.step === 'cooperativas') {
+                loadOperativos();
+            }
         });
 
         document.addEventListener('keydown', (ev) => {

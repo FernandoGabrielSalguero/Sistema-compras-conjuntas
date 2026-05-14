@@ -5,6 +5,8 @@ declare(strict_types=1);
 final class StepEditModel
 {
     private PDO $pdo;
+    private array $rowCache = [];
+    private array $ownershipCache = [];
 
     private const PRODUCTOR_TABLES_BY_USER_ID = [
         'usuarios_info' => ['owner' => 'usuario_id', 'annual' => false, 'defaults' => ['zona_asignada' => '']],
@@ -88,6 +90,20 @@ final class StepEditModel
         return $coops;
     }
 
+    public function listarCooperativasLivianas(int $operativoId, string $ingenieroIdReal): array
+    {
+        $this->getCamposOperativoAbierto($operativoId);
+        $coops = $this->getCoopsByIngeniero($ingenieroIdReal);
+
+        foreach ($coops as &$coop) {
+            $productores = $this->getProductoresByCooperativa((string)$coop['id_real'], $ingenieroIdReal);
+            $coop['productores_count'] = count($productores);
+        }
+        unset($coop);
+
+        return $coops;
+    }
+
     public function listarProductoresConAvance(int $operativoId, string $coopIdReal, string $ingenieroIdReal): array
     {
         $this->assertCoopPerteneceAIngeniero($coopIdReal, $ingenieroIdReal);
@@ -100,6 +116,13 @@ final class StepEditModel
         unset($productor);
 
         return $productores;
+    }
+
+    public function listarProductoresLivianos(int $operativoId, string $coopIdReal, string $ingenieroIdReal): array
+    {
+        $this->getCamposOperativoAbierto($operativoId);
+        $this->assertCoopPerteneceAIngeniero($coopIdReal, $ingenieroIdReal);
+        return $this->getProductoresByCooperativa($coopIdReal, $ingenieroIdReal);
     }
 
     public function obtenerFormularioProductor(int $operativoId, string $productorIdReal, string $ingenieroIdReal): array
@@ -118,8 +141,24 @@ final class StepEditModel
             'cuarteles' => $cuarteles,
             'campos' => $this->decorateCampos($campos),
             'values' => $values,
-            'avance' => $this->calcularAvanceProductor($operativoId, $campos, $productorIdReal),
         ];
+    }
+
+    public function obtenerAvanceCooperativa(int $operativoId, string $coopIdReal, string $ingenieroIdReal): array
+    {
+        $this->assertCoopPerteneceAIngeniero($coopIdReal, $ingenieroIdReal);
+        $campos = $this->getCamposOperativoAbierto($operativoId);
+        $productores = $this->getProductoresByCooperativa($coopIdReal, $ingenieroIdReal);
+        $ids = array_values(array_map(static fn($p) => (string)$p['id_real'], $productores));
+
+        return $this->calcularAvanceParaProductores($operativoId, $campos, $ids);
+    }
+
+    public function obtenerAvanceProductorPublico(int $operativoId, string $productorIdReal, string $ingenieroIdReal): array
+    {
+        $this->assertProductorPerteneceAIngeniero($productorIdReal, $ingenieroIdReal);
+        $campos = $this->getCamposOperativoAbierto($operativoId);
+        return $this->calcularAvanceProductor($operativoId, $campos, $productorIdReal);
     }
 
     public function obtenerAvanceGeneral(int $operativoId, string $ingenieroIdReal): array
@@ -176,7 +215,7 @@ final class StepEditModel
         return [
             'campo' => $campoOperativo,
             'value' => $value,
-            'avance' => $this->calcularAvanceProductor($operativoId, $campos, $productorIdReal),
+            'saved' => true,
         ];
     }
 
@@ -285,6 +324,7 @@ final class StepEditModel
     {
         $productor = $this->getProductor($productorIdReal);
         $values = ['productor' => [], 'finca' => [], 'cuartel' => []];
+        $this->rowCache = [];
 
         foreach ($campos as $campo) {
             $tabla = (string)$campo['tabla'];
@@ -316,33 +356,39 @@ final class StepEditModel
         $this->assertSafeIdentifier($campo);
 
         if ($tabla === 'usuarios') {
-            return $this->fetchScalar("SELECT {$this->qid($campo)} FROM usuarios WHERE id = :id LIMIT 1", [':id' => (int)$productor['id']]);
+            $row = $this->fetchCachedRow('usuarios:' . (int)$productor['id'], "SELECT * FROM usuarios WHERE id = :id LIMIT 1", [':id' => (int)$productor['id']]);
+            return $row[$campo] ?? null;
         }
 
         if ($alcance === 'productor' && isset(self::PRODUCTOR_TABLES_BY_USER_ID[$tabla])) {
             $meta = self::PRODUCTOR_TABLES_BY_USER_ID[$tabla];
             $order = $meta['annual'] ? ' ORDER BY anio DESC, id DESC' : '';
-            return $this->fetchScalar("SELECT {$this->qid($campo)} FROM {$tabla} WHERE {$meta['owner']} = :owner{$order} LIMIT 1", [':owner' => (int)$productor['id']]);
+            $row = $this->fetchCachedRow($tabla . ':owner:' . (int)$productor['id'], "SELECT * FROM {$tabla} WHERE {$meta['owner']} = :owner{$order} LIMIT 1", [':owner' => (int)$productor['id']]);
+            return $row[$campo] ?? null;
         }
 
         if ($alcance === 'finca') {
             $this->assertFincaPerteneceAProductor($entityId, $productorIdReal);
             if ($tabla === 'prod_fincas') {
-                return $this->fetchScalar("SELECT {$this->qid($campo)} FROM prod_fincas WHERE id = :id LIMIT 1", [':id' => $entityId]);
+                $row = $this->fetchCachedRow('prod_fincas:' . $entityId, "SELECT * FROM prod_fincas WHERE id = :id LIMIT 1", [':id' => $entityId]);
+                return $row[$campo] ?? null;
             }
             if (isset(self::FINCA_TABLES[$tabla])) {
                 $order = self::FINCA_TABLES[$tabla]['annual'] ? ' ORDER BY anio DESC, id DESC' : '';
-                return $this->fetchScalar("SELECT {$this->qid($campo)} FROM {$tabla} WHERE finca_id = :id{$order} LIMIT 1", [':id' => $entityId]);
+                $row = $this->fetchCachedRow($tabla . ':finca:' . $entityId, "SELECT * FROM {$tabla} WHERE finca_id = :id{$order} LIMIT 1", [':id' => $entityId]);
+                return $row[$campo] ?? null;
             }
         }
 
         if ($alcance === 'cuartel') {
             $this->assertCuartelPerteneceAProductor($entityId, $productorIdReal);
             if ($tabla === 'prod_cuartel') {
-                return $this->fetchScalar("SELECT {$this->qid($campo)} FROM prod_cuartel WHERE id = :id LIMIT 1", [':id' => $entityId]);
+                $row = $this->fetchCachedRow('prod_cuartel:' . $entityId, "SELECT * FROM prod_cuartel WHERE id = :id LIMIT 1", [':id' => $entityId]);
+                return $row[$campo] ?? null;
             }
             if (in_array($tabla, self::CUARTEL_TABLES, true)) {
-                return $this->fetchScalar("SELECT {$this->qid($campo)} FROM {$tabla} WHERE cuartel_id = :id LIMIT 1", [':id' => $entityId]);
+                $row = $this->fetchCachedRow($tabla . ':cuartel:' . $entityId, "SELECT * FROM {$tabla} WHERE cuartel_id = :id LIMIT 1", [':id' => $entityId]);
+                return $row[$campo] ?? null;
             }
         }
 
@@ -646,17 +692,26 @@ final class StepEditModel
         if ($fincaId <= 0) {
             throw new InvalidArgumentException('Finca invalida');
         }
+        $cacheKey = 'finca:' . $fincaId . ':' . $productorIdReal;
+        if (isset($this->ownershipCache[$cacheKey])) {
+            return;
+        }
         $stmt = $this->pdo->prepare("SELECT 1 FROM prod_fincas WHERE id = :id AND productor_id_real = :prod AND COALESCE(archivado, 0) = 0 LIMIT 1");
         $stmt->execute([':id' => $fincaId, ':prod' => $productorIdReal]);
         if (!$stmt->fetchColumn()) {
             throw new RuntimeException('La finca no pertenece al productor');
         }
+        $this->ownershipCache[$cacheKey] = true;
     }
 
     private function assertCuartelPerteneceAProductor(int $cuartelId, string $productorIdReal): void
     {
         if ($cuartelId <= 0) {
             throw new InvalidArgumentException('Cuartel invalido');
+        }
+        $cacheKey = 'cuartel:' . $cuartelId . ':' . $productorIdReal;
+        if (isset($this->ownershipCache[$cacheKey])) {
+            return;
         }
         $stmt = $this->pdo->prepare("
             SELECT 1
@@ -671,6 +726,7 @@ final class StepEditModel
         if (!$stmt->fetchColumn()) {
             throw new RuntimeException('El cuartel no pertenece al productor');
         }
+        $this->ownershipCache[$cacheKey] = true;
     }
 
     private function findCampoOperativo(array $campos, string $tabla, string $campo, string $alcance): ?array
@@ -689,6 +745,19 @@ final class StepEditModel
         $stmt->execute($params);
         $value = $stmt->fetchColumn();
         return $value === false ? null : $value;
+    }
+
+    private function fetchCachedRow(string $key, string $sql, array $params): array
+    {
+        if (array_key_exists($key, $this->rowCache)) {
+            return $this->rowCache[$key];
+        }
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        $row = $stmt->fetch();
+        $this->rowCache[$key] = is_array($row) ? $row : [];
+        return $this->rowCache[$key];
     }
 
     private function normalizeValue($value)
