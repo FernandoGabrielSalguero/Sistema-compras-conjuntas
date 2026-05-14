@@ -133,6 +133,7 @@ unset($_SESSION['cierre_info']);
                 <?php
                 $relevamiento_read_only = true;
                 include __DIR__ . '/../partials/relevamiento/shared/edit_relevamiento.php';
+                include __DIR__ . '/../partials/relevamiento/step_edit/step_edit.php';
                 ?>
             </section>
         </div>

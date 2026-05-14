@@ -432,6 +432,12 @@ $relevamientoReadOnly = !empty($relevamiento_read_only);
 <!-- Encabezado del módulo de relevamiento -->
                 <div class="card">
                     <h2 id="cards-title">Relevamiento</h2>
+                    <?php if ($relevamientoReadOnly): ?>
+                        <button type="button" class="btn btn-aceptar" onclick="window.StepEdit && window.StepEdit.open()">
+                            <span class="material-symbols-outlined">edit_note</span>
+                            Cargar operativo
+                        </button>
+                    <?php endif; ?>
                     <p>Seleccioná una cooperativa para ver sus productores asociados.</p>
                 </div>
 
