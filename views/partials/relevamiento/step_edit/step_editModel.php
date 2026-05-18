@@ -214,6 +214,307 @@ final class StepEditModel
         ];
     }
 
+    public function listarCodigosVariedades(): array
+    {
+        $stmt = $this->pdo->query("
+            SELECT id, codigo_variedad, nombre_variedad
+            FROM codigo_variedades_fincas
+            ORDER BY nombre_variedad ASC, codigo_variedad ASC
+        ");
+
+        return $stmt->fetchAll() ?: [];
+    }
+
+    public function crearProductorEnCooperativaOperativo(array $payload, string $ingenieroIdReal): array
+    {
+        $operativoId = (int)($payload['operativo_id'] ?? 0);
+        $coopIdReal = trim((string)($payload['coop_id_real'] ?? ''));
+        $nombre = trim((string)($payload['nombre'] ?? ''));
+        $cuit = preg_replace('/\D+/', '', (string)($payload['cuit'] ?? '')) ?? '';
+        $usuarioInput = trim((string)($payload['usuario'] ?? ''));
+
+        $this->getCamposOperativoAbierto($operativoId);
+        if ($coopIdReal === '') {
+            throw new InvalidArgumentException('Cooperativa invalida');
+        }
+        if ($nombre === '') {
+            throw new InvalidArgumentException('El nombre del productor es requerido');
+        }
+        if ($cuit === '' || !preg_match('/^\d{7,13}$/', $cuit)) {
+            throw new InvalidArgumentException('CUIT invalido');
+        }
+
+        $this->assertCoopPerteneceAIngeniero($coopIdReal, $ingenieroIdReal);
+
+        $this->pdo->beginTransaction();
+        try {
+            $existsCuit = $this->pdo->prepare("SELECT 1 FROM usuarios WHERE cuit = :cuit AND rol = 'productor' LIMIT 1");
+            $existsCuit->execute([':cuit' => $cuit]);
+            if ($existsCuit->fetchColumn()) {
+                throw new RuntimeException('Ya existe un productor con ese CUIT');
+            }
+
+            $rangoStmt = $this->pdo->prepare("
+                SELECT rango_productores_inicio, rango_productores_fin
+                FROM cooperativas_rangos
+                WHERE cooperativa_id_real = :coop
+                LIMIT 1
+            ");
+            $rangoStmt->execute([':coop' => $coopIdReal]);
+            $rango = $rangoStmt->fetch();
+            if (!$rango) {
+                throw new RuntimeException('No se encontro rango de productores para la cooperativa');
+            }
+
+            $idReal = $this->obtenerProximoIdRealDisponible((int)$rango['rango_productores_inicio'], (int)$rango['rango_productores_fin']);
+            if ($idReal === null) {
+                throw new RuntimeException('No hay id_real disponible en el rango de productores');
+            }
+
+            $usuario = $usuarioInput !== '' ? $usuarioInput : 'prod_' . $idReal;
+            $existsUsuario = $this->pdo->prepare("SELECT 1 FROM usuarios WHERE usuario = :usuario LIMIT 1");
+            $existsUsuario->execute([':usuario' => $usuario]);
+            if ($existsUsuario->fetchColumn()) {
+                throw new RuntimeException('El usuario interno del productor ya existe');
+            }
+
+            $insertUsuario = $this->pdo->prepare("
+                INSERT INTO usuarios (usuario, contrasena, rol, permiso_ingreso, cuit, id_real, archivado, archivado_at, archivado_by_real)
+                VALUES (:usuario, :contrasena, 'productor', 'Habilitado', :cuit, :id_real, 0, NULL, NULL)
+            ");
+            $insertUsuario->execute([
+                ':usuario' => $usuario,
+                ':contrasena' => password_hash($usuario, PASSWORD_DEFAULT),
+                ':cuit' => $cuit,
+                ':id_real' => $idReal,
+            ]);
+
+            $usuarioId = (int)$this->pdo->lastInsertId();
+            $insertInfo = $this->pdo->prepare("
+                INSERT INTO usuarios_info (usuario_id, nombre, telefono, correo, direccion, zona_asignada)
+                VALUES (:usuario_id, :nombre, '', '', '', '')
+            ");
+            $insertInfo->execute([':usuario_id' => $usuarioId, ':nombre' => $nombre]);
+
+            $insertRel = $this->pdo->prepare("
+                INSERT INTO rel_productor_coop (productor_id_real, cooperativa_id_real)
+                VALUES (:prod, :coop)
+            ");
+            $insertRel->execute([':prod' => $idReal, ':coop' => $coopIdReal]);
+
+            $this->upsertEstadoProductor($operativoId, $idReal, 'en_progreso', $ingenieroIdReal);
+            $this->pdo->commit();
+
+            return [
+                'id_real' => $idReal,
+                'nombre' => $nombre,
+                'cuit' => $cuit,
+                'estado_relevamiento' => 'en_progreso',
+                'estado_relevamiento_label' => $this->estadoLabel('en_progreso'),
+                'avance' => $this->avanceDesdeEstado('en_progreso'),
+            ];
+        } catch (Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
+    }
+
+    public function crearFincaProductor(array $payload, string $ingenieroIdReal): array
+    {
+        $operativoId = (int)($payload['operativo_id'] ?? 0);
+        $productorIdReal = trim((string)($payload['productor_id_real'] ?? ''));
+        $coopIdReal = trim((string)($payload['coop_id_real'] ?? ''));
+        $codigoFinca = trim((string)($payload['codigo_finca'] ?? ''));
+        $nombreFinca = trim((string)($payload['nombre_finca'] ?? ''));
+
+        $this->getCamposOperativoAbierto($operativoId);
+        $this->assertProductorPerteneceAIngeniero($productorIdReal, $ingenieroIdReal);
+        if ($coopIdReal !== '') {
+            $this->assertProductorPerteneceACooperativaIngeniero($productorIdReal, $coopIdReal, $ingenieroIdReal);
+        }
+        if ($codigoFinca === '') {
+            throw new InvalidArgumentException('El codigo de finca es requerido');
+        }
+        if ($nombreFinca === '') {
+            throw new InvalidArgumentException('El nombre de finca es requerido');
+        }
+
+        $productor = $this->getProductor($productorIdReal);
+        $dup = $this->pdo->prepare("SELECT 1 FROM prod_fincas WHERE productor_id_real = :prod AND codigo_finca = :codigo LIMIT 1");
+        $dup->execute([':prod' => $productorIdReal, ':codigo' => $codigoFinca]);
+        if ($dup->fetchColumn()) {
+            throw new RuntimeException('Ya existe una finca con ese codigo para el productor');
+        }
+
+        $this->pdo->beginTransaction();
+        try {
+            $insert = $this->pdo->prepare("
+                INSERT INTO prod_fincas (codigo_finca, productor_id_real, nombre_finca, archivado, archivado_at, archivado_by_real)
+                VALUES (:codigo, :prod, :nombre, 0, NULL, NULL)
+            ");
+            $insert->execute([
+                ':codigo' => $codigoFinca,
+                ':prod' => $productorIdReal,
+                ':nombre' => $nombreFinca,
+            ]);
+            $fincaId = (int)$this->pdo->lastInsertId();
+
+            $insertRel = $this->pdo->prepare("
+                INSERT INTO rel_productor_finca (productor_id, productor_id_real, finca_id)
+                VALUES (:productor_id, :productor_id_real, :finca_id)
+            ");
+            $insertRel->execute([
+                ':productor_id' => (int)$productor['id'],
+                ':productor_id_real' => $productorIdReal,
+                ':finca_id' => $fincaId,
+            ]);
+
+            $this->pdo->commit();
+            return ['id' => $fincaId, 'codigo_finca' => $codigoFinca, 'nombre_finca' => $nombreFinca];
+        } catch (Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
+    }
+
+    public function crearCuartelEnFinca(array $payload, string $ingenieroIdReal): array
+    {
+        $operativoId = (int)($payload['operativo_id'] ?? 0);
+        $productorIdReal = trim((string)($payload['productor_id_real'] ?? ''));
+        $coopIdRealPayload = trim((string)($payload['coop_id_real'] ?? ''));
+        $fincaId = (int)($payload['finca_id'] ?? 0);
+        $variedad = trim((string)($payload['variedad'] ?? ''));
+        $sistema = trim((string)($payload['sistema_conduccion'] ?? ''));
+        $superficieRaw = trim((string)($payload['superficie_ha'] ?? ''));
+
+        $this->getCamposOperativoAbierto($operativoId);
+        $this->assertProductorPerteneceAIngeniero($productorIdReal, $ingenieroIdReal);
+        if ($coopIdRealPayload !== '') {
+            $this->assertProductorPerteneceACooperativaIngeniero($productorIdReal, $coopIdRealPayload, $ingenieroIdReal);
+        }
+        $this->assertFincaPerteneceAProductor($fincaId, $productorIdReal);
+        if ($variedad === '') {
+            throw new InvalidArgumentException('La variedad es requerida');
+        }
+        $superficie = null;
+        if ($superficieRaw !== '') {
+            if (!is_numeric($superficieRaw)) {
+                throw new InvalidArgumentException('Superficie invalida');
+            }
+            $superficie = (float)$superficieRaw;
+        }
+
+        $finca = $this->getFincaRow($fincaId, $productorIdReal);
+        $coopIdReal = $this->getCooperativaAsignada($productorIdReal, $ingenieroIdReal);
+        if ($coopIdReal === null) {
+            throw new RuntimeException('No se encontro cooperativa asociada al productor');
+        }
+        $codigoCuartel = $this->siguienteCodigoCuartel($fincaId);
+
+        $insert = $this->pdo->prepare("
+            INSERT INTO prod_cuartel (
+                id_responsable_real, cooperativa_id_real, codigo_finca, nombre_finca, codigo_cuartel,
+                variedad, sistema_conduccion, superficie_ha, finca_id, archivado, archivado_at, archivado_by_real
+            ) VALUES (
+                :prod, :coop, :codigo_finca, :nombre_finca, :codigo_cuartel,
+                :variedad, :sistema_conduccion, :superficie_ha, :finca_id, 0, NULL, NULL
+            )
+        ");
+        $insert->execute([
+            ':prod' => $productorIdReal,
+            ':coop' => $coopIdReal,
+            ':codigo_finca' => (string)$finca['codigo_finca'],
+            ':nombre_finca' => (string)($finca['nombre_finca'] ?? ''),
+            ':codigo_cuartel' => $codigoCuartel,
+            ':variedad' => $variedad,
+            ':sistema_conduccion' => $sistema !== '' ? $sistema : null,
+            ':superficie_ha' => $superficie,
+            ':finca_id' => $fincaId,
+        ]);
+
+        return [
+            'id' => (int)$this->pdo->lastInsertId(),
+            'finca_id' => $fincaId,
+            'codigo_cuartel' => $codigoCuartel,
+            'variedad' => $variedad,
+            'sistema_conduccion' => $sistema,
+            'superficie_ha' => $superficie,
+        ];
+    }
+
+    public function archivarProductor(array $payload, string $ingenieroIdReal): array
+    {
+        $operativoId = (int)($payload['operativo_id'] ?? 0);
+        $productorIdReal = trim((string)($payload['productor_id_real'] ?? ''));
+        $coopIdReal = trim((string)($payload['coop_id_real'] ?? ''));
+        $this->getCamposOperativoAbierto($operativoId);
+        $this->assertProductorPerteneceAIngeniero($productorIdReal, $ingenieroIdReal);
+        if ($coopIdReal !== '') {
+            $this->assertProductorPerteneceACooperativaIngeniero($productorIdReal, $coopIdReal, $ingenieroIdReal);
+        }
+
+        $this->pdo->beginTransaction();
+        try {
+            $this->setArchiveUsuario($productorIdReal, $ingenieroIdReal);
+            $this->setArchiveFincasByProductor($productorIdReal, $ingenieroIdReal);
+            $this->setArchiveCuartelesByProductor($productorIdReal, $ingenieroIdReal);
+            $this->pdo->commit();
+        } catch (Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
+
+        return ['archivado' => true];
+    }
+
+    public function archivarFincaProductor(array $payload, string $ingenieroIdReal): array
+    {
+        $operativoId = (int)($payload['operativo_id'] ?? 0);
+        $productorIdReal = trim((string)($payload['productor_id_real'] ?? ''));
+        $coopIdReal = trim((string)($payload['coop_id_real'] ?? ''));
+        $fincaId = (int)($payload['finca_id'] ?? 0);
+        $this->getCamposOperativoAbierto($operativoId);
+        $this->assertProductorPerteneceAIngeniero($productorIdReal, $ingenieroIdReal);
+        if ($coopIdReal !== '') {
+            $this->assertProductorPerteneceACooperativaIngeniero($productorIdReal, $coopIdReal, $ingenieroIdReal);
+        }
+        $this->assertFincaPerteneceAProductor($fincaId, $productorIdReal);
+
+        $this->pdo->beginTransaction();
+        try {
+            $stmt = $this->pdo->prepare("UPDATE prod_fincas SET archivado = 1, archivado_at = NOW(), archivado_by_real = :by WHERE id = :id");
+            $stmt->execute([':id' => $fincaId, ':by' => $ingenieroIdReal]);
+            // Al archivar una finca, sus cuarteles dejan de formar parte del flujo activo.
+            $cuarteles = $this->pdo->prepare("UPDATE prod_cuartel SET archivado = 1, archivado_at = NOW(), archivado_by_real = :by WHERE finca_id = :id");
+            $cuarteles->execute([':id' => $fincaId, ':by' => $ingenieroIdReal]);
+            $this->pdo->commit();
+        } catch (Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
+
+        return ['archivado' => true];
+    }
+
+    public function archivarCuartelProductor(array $payload, string $ingenieroIdReal): array
+    {
+        $operativoId = (int)($payload['operativo_id'] ?? 0);
+        $productorIdReal = trim((string)($payload['productor_id_real'] ?? ''));
+        $coopIdReal = trim((string)($payload['coop_id_real'] ?? ''));
+        $cuartelId = (int)($payload['cuartel_id'] ?? 0);
+        $this->getCamposOperativoAbierto($operativoId);
+        $this->assertProductorPerteneceAIngeniero($productorIdReal, $ingenieroIdReal);
+        if ($coopIdReal !== '') {
+            $this->assertProductorPerteneceACooperativaIngeniero($productorIdReal, $coopIdReal, $ingenieroIdReal);
+        }
+        $this->assertCuartelPerteneceAProductor($cuartelId, $productorIdReal);
+
+        $stmt = $this->pdo->prepare("UPDATE prod_cuartel SET archivado = 1, archivado_at = NOW(), archivado_by_real = :by WHERE id = :id");
+        $stmt->execute([':id' => $cuartelId, ':by' => $ingenieroIdReal]);
+
+        return ['archivado' => true];
+    }
+
     public function guardarCampo(array $payload, string $ingenieroIdReal): array
     {
         $operativoId = (int)($payload['operativo_id'] ?? 0);
@@ -955,6 +1256,124 @@ final class StepEditModel
         ]);
     }
 
+    private function upsertEstadoProductor(int $operativoId, string $productorIdReal, string $estado, string $ingenieroIdReal): void
+    {
+        $stmt = $this->pdo->prepare("
+            INSERT INTO relevamiento_productor_estados
+                (operativo_id, productor_id_real, estado, updated_by_real)
+            VALUES
+                (:operativo_id, :productor_id_real, :estado, :updated_by_real)
+            ON DUPLICATE KEY UPDATE
+                estado = VALUES(estado),
+                updated_by_real = VALUES(updated_by_real),
+                updated_at = CURRENT_TIMESTAMP
+        ");
+        $stmt->execute([
+            ':operativo_id' => $operativoId,
+            ':productor_id_real' => $productorIdReal,
+            ':estado' => $estado,
+            ':updated_by_real' => $ingenieroIdReal,
+        ]);
+    }
+
+    private function obtenerProximoIdRealDisponible(int $inicio, int $fin): ?string
+    {
+        if ($inicio <= 0 || $fin <= 0 || $inicio > $fin) {
+            throw new RuntimeException('Rango de productores invalido para la cooperativa');
+        }
+
+        $stmt = $this->pdo->query("SELECT id_real FROM usuarios WHERE id_real REGEXP '^P[0-9]+$'");
+        $usados = array_flip($stmt->fetchAll(PDO::FETCH_COLUMN) ?: []);
+        for ($i = $inicio; $i <= $fin; $i++) {
+            $candidate = 'P' . $i;
+            if (!isset($usados[$candidate])) {
+                return $candidate;
+            }
+        }
+
+        return null;
+    }
+
+    private function getFincaRow(int $fincaId, string $productorIdReal): array
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT id, codigo_finca, nombre_finca
+            FROM prod_fincas
+            WHERE id = :id
+              AND productor_id_real = :prod
+              AND COALESCE(archivado, 0) = 0
+            LIMIT 1
+        ");
+        $stmt->execute([':id' => $fincaId, ':prod' => $productorIdReal]);
+        $row = $stmt->fetch();
+        if (!$row) {
+            throw new RuntimeException('Finca no encontrada');
+        }
+        return $row;
+    }
+
+    private function getCooperativaAsignada(string $productorIdReal, string $ingenieroIdReal): ?string
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT rpc.cooperativa_id_real
+            FROM rel_productor_coop rpc
+            JOIN rel_coop_ingeniero rci ON rci.cooperativa_id_real = rpc.cooperativa_id_real
+            WHERE rpc.productor_id_real = :prod
+              AND rci.ingeniero_id_real = :ing
+            ORDER BY rpc.id ASC
+            LIMIT 1
+        ");
+        $stmt->execute([':prod' => $productorIdReal, ':ing' => $ingenieroIdReal]);
+        $coop = $stmt->fetchColumn();
+        return $coop === false ? null : (string)$coop;
+    }
+
+    private function siguienteCodigoCuartel(int $fincaId): string
+    {
+        $stmt = $this->pdo->prepare("SELECT codigo_cuartel FROM prod_cuartel WHERE finca_id = :finca_id ORDER BY id ASC");
+        $stmt->execute([':finca_id' => $fincaId]);
+        $max = 0;
+        foreach (($stmt->fetchAll(PDO::FETCH_COLUMN) ?: []) as $codigo) {
+            if (preg_match('/(\d+)$/', (string)$codigo, $matches)) {
+                $max = max($max, (int)$matches[1]);
+            }
+        }
+        return 'Q' . ($max + 1);
+    }
+
+    private function setArchiveUsuario(string $productorIdReal, string $byIdReal): void
+    {
+        $stmt = $this->pdo->prepare("
+            UPDATE usuarios
+            SET archivado = 1, archivado_at = NOW(), archivado_by_real = :by
+            WHERE id_real = :prod AND rol = 'productor'
+        ");
+        $stmt->execute([':prod' => $productorIdReal, ':by' => $byIdReal]);
+    }
+
+    private function setArchiveFincasByProductor(string $productorIdReal, string $byIdReal): void
+    {
+        $stmt = $this->pdo->prepare("
+            UPDATE prod_fincas
+            SET archivado = 1, archivado_at = NOW(), archivado_by_real = :by
+            WHERE productor_id_real = :prod
+        ");
+        $stmt->execute([':prod' => $productorIdReal, ':by' => $byIdReal]);
+    }
+
+    private function setArchiveCuartelesByProductor(string $productorIdReal, string $byIdReal): void
+    {
+        $stmt = $this->pdo->prepare("
+            UPDATE prod_cuartel pc
+            LEFT JOIN prod_fincas pf ON pf.id = pc.finca_id
+            SET pc.archivado = 1,
+                pc.archivado_at = NOW(),
+                pc.archivado_by_real = :by
+            WHERE pc.id_responsable_real = :prod OR pf.productor_id_real = :prod
+        ");
+        $stmt->execute([':prod' => $productorIdReal, ':by' => $byIdReal]);
+    }
+
     private function assertCoopPerteneceAIngeniero(string $coopIdReal, string $ingenieroIdReal): void
     {
         $stmt = $this->pdo->prepare("SELECT 1 FROM rel_coop_ingeniero WHERE cooperativa_id_real = :coop AND ingeniero_id_real = :ing LIMIT 1");
@@ -979,6 +1398,29 @@ final class StepEditModel
         $stmt->execute([':prod' => $productorIdReal, ':ing' => $ingenieroIdReal]);
         if (!$stmt->fetchColumn()) {
             throw new RuntimeException('No autorizado para este productor');
+        }
+    }
+
+    private function assertProductorPerteneceACooperativaIngeniero(string $productorIdReal, string $coopIdReal, string $ingenieroIdReal): void
+    {
+        if ($productorIdReal === '' || $coopIdReal === '') {
+            throw new InvalidArgumentException('Relacion productor/cooperativa invalida');
+        }
+
+        $stmt = $this->pdo->prepare("
+            SELECT 1
+            FROM rel_productor_coop rpc
+            JOIN rel_coop_ingeniero rci ON rci.cooperativa_id_real = rpc.cooperativa_id_real
+            JOIN usuarios u ON u.id_real = rpc.productor_id_real AND u.rol = 'productor'
+            WHERE rpc.productor_id_real = :prod
+              AND rpc.cooperativa_id_real = :coop
+              AND rci.ingeniero_id_real = :ing
+              AND COALESCE(u.archivado, 0) = 0
+            LIMIT 1
+        ");
+        $stmt->execute([':prod' => $productorIdReal, ':coop' => $coopIdReal, ':ing' => $ingenieroIdReal]);
+        if (!$stmt->fetchColumn()) {
+            throw new RuntimeException('El productor no pertenece a la cooperativa seleccionada');
         }
     }
 

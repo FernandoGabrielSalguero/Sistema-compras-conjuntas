@@ -106,6 +106,20 @@ $stepEditBasePath = $appBasePath ?? '';
         box-shadow: 0 8px 22px rgba(37, 99, 235, .12);
     }
 
+    .step-edit-create-card {
+        display: grid;
+        place-items: center;
+        min-height: 132px;
+        border-style: dashed;
+        background: #f8fafc;
+        text-align: center;
+    }
+
+    .step-edit-create-card .material-symbols-outlined {
+        font-size: 32px;
+        color: #2563eb;
+    }
+
     .step-edit-list-title {
         display: flex;
         justify-content: space-between;
@@ -126,6 +140,39 @@ $stepEditBasePath = $appBasePath ?? '';
         margin-top: .35rem;
         font-size: .84rem;
         color: rgba(15, 23, 42, .62);
+    }
+
+    .step-edit-card-actions,
+    .step-edit-accordion-actions,
+    .step-edit-structure-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .5rem;
+        align-items: center;
+    }
+
+    .step-edit-card-actions {
+        justify-content: flex-end;
+        margin-top: .65rem;
+    }
+
+    .step-edit-structure-actions {
+        justify-content: flex-end;
+        margin: 0 0 .75rem;
+    }
+
+    .step-edit-action-button {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+    }
+
+    .step-edit-danger {
+        color: #b91c1c;
+    }
+
+    .step-edit-danger:hover {
+        color: #991b1b;
     }
 
     .step-edit-muted {
@@ -341,6 +388,13 @@ $stepEditBasePath = $appBasePath ?? '';
         overflow-wrap: anywhere;
     }
 
+    .step-edit-modal-error {
+        min-height: 18px;
+        margin-top: .5rem;
+        color: #b91c1c;
+        font-size: .84rem;
+    }
+
     .step-edit-loader {
         display: grid;
         gap: 1rem;
@@ -477,6 +531,93 @@ $stepEditBasePath = $appBasePath ?? '';
     </div>
 </div>
 
+<div id="step-edit-confirm-action-modal" class="step-edit-modal modal hidden" aria-hidden="true">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="step-edit-confirm-action-title">
+        <h3 id="step-edit-confirm-action-title">Confirmar accion</h3>
+        <div class="modal-body">
+            <p id="step-edit-confirm-action-message"></p>
+            <div class="step-edit-modal-error" data-step-edit-action-error></div>
+        </div>
+        <div class="form-buttons">
+            <button type="button" class="btn btn-cancelar" data-step-edit-action-cancel>Cancelar</button>
+            <button type="button" class="btn btn-aceptar" data-step-edit-action-confirm>Archivar</button>
+        </div>
+    </div>
+</div>
+
+<div id="step-edit-create-productor-modal" class="step-edit-modal modal hidden" aria-hidden="true">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="step-edit-create-productor-title">
+        <h3 id="step-edit-create-productor-title">Nuevo productor</h3>
+        <div class="modal-body">
+            <div class="step-edit-fields">
+                <div class="step-edit-field">
+                    <label>Nombre del productor</label>
+                    <input type="text" data-step-edit-new-productor-nombre>
+                </div>
+                <div class="step-edit-field">
+                    <label>CUIT</label>
+                    <input type="text" data-step-edit-new-productor-cuit inputmode="numeric">
+                </div>
+            </div>
+            <div class="step-edit-modal-error" data-step-edit-create-productor-error></div>
+        </div>
+        <div class="form-buttons">
+            <button type="button" class="btn btn-cancelar" data-step-edit-create-productor-cancel>Cancelar</button>
+            <button type="button" class="btn btn-aceptar" data-step-edit-create-productor-confirm>Crear</button>
+        </div>
+    </div>
+</div>
+
+<div id="step-edit-create-finca-modal" class="step-edit-modal modal hidden" aria-hidden="true">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="step-edit-create-finca-title">
+        <h3 id="step-edit-create-finca-title">Añadir finca</h3>
+        <div class="modal-body">
+            <div class="step-edit-fields">
+                <div class="step-edit-field">
+                    <label>Codigo de finca</label>
+                    <input type="text" data-step-edit-new-finca-codigo>
+                </div>
+                <div class="step-edit-field">
+                    <label>Nombre de finca</label>
+                    <input type="text" data-step-edit-new-finca-nombre>
+                </div>
+            </div>
+            <div class="step-edit-modal-error" data-step-edit-create-finca-error></div>
+        </div>
+        <div class="form-buttons">
+            <button type="button" class="btn btn-cancelar" data-step-edit-create-finca-cancel>Cancelar</button>
+            <button type="button" class="btn btn-aceptar" data-step-edit-create-finca-confirm>Añadir</button>
+        </div>
+    </div>
+</div>
+
+<div id="step-edit-create-cuartel-modal" class="step-edit-modal modal hidden" aria-hidden="true">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="step-edit-create-cuartel-title">
+        <h3 id="step-edit-create-cuartel-title">Añadir cuartel</h3>
+        <div class="modal-body">
+            <div class="step-edit-fields">
+                <div class="step-edit-field">
+                    <label>Variedad</label>
+                    <select data-step-edit-new-cuartel-variedad></select>
+                </div>
+                <div class="step-edit-field">
+                    <label>Sistema de conduccion</label>
+                    <input type="text" data-step-edit-new-cuartel-sistema>
+                </div>
+                <div class="step-edit-field">
+                    <label>Superficie ha</label>
+                    <input type="number" step="any" data-step-edit-new-cuartel-superficie>
+                </div>
+            </div>
+            <div class="step-edit-modal-error" data-step-edit-create-cuartel-error></div>
+        </div>
+        <div class="form-buttons">
+            <button type="button" class="btn btn-cancelar" data-step-edit-create-cuartel-cancel>Cancelar</button>
+            <button type="button" class="btn btn-aceptar" data-step-edit-create-cuartel-confirm>Añadir</button>
+        </div>
+    </div>
+</div>
+
 <script>
     window.StepEdit = (() => {
         const API = <?= json_encode($stepEditBasePath . '/views/partials/relevamiento/step_edit/step_editController.php', JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
@@ -490,7 +631,10 @@ $stepEditBasePath = $appBasePath ?? '';
             loadingToken: 0,
             saveTimers: new Map(),
             formDirty: false,
-            pendingBackAfterState: false
+            pendingBackAfterState: false,
+            pendingConfirmAction: null,
+            pendingCuartelFincaId: null,
+            variedades: null
         };
 
         const modal = () => document.getElementById('step-edit-modal');
@@ -500,6 +644,10 @@ $stepEditBasePath = $appBasePath ?? '';
         const subtitle = () => document.getElementById('step-edit-subtitle');
         const closeConfirmModal = () => document.getElementById('step-edit-confirm-close-modal');
         const productorEstadoModal = () => document.getElementById('step-edit-productor-estado-modal');
+        const confirmActionModal = () => document.getElementById('step-edit-confirm-action-modal');
+        const createProductorModal = () => document.getElementById('step-edit-create-productor-modal');
+        const createFincaModal = () => document.getElementById('step-edit-create-finca-modal');
+        const createCuartelModal = () => document.getElementById('step-edit-create-cuartel-modal');
 
         function escapeHtml(value) {
             return String(value ?? '')
@@ -579,6 +727,63 @@ $stepEditBasePath = $appBasePath ?? '';
             const data = await resp.json();
             if (!data.ok) throw new Error(data.error || 'Error de relevamiento');
             return data.data;
+        }
+
+        function showModal(modalEl) {
+            modalEl.classList.remove('hidden');
+            modalEl.setAttribute('aria-hidden', 'false');
+        }
+
+        function hideModal(modalEl) {
+            modalEl.classList.add('hidden');
+            modalEl.setAttribute('aria-hidden', 'true');
+        }
+
+        function setModalError(modalEl, selector, message = '') {
+            const el = modalEl.querySelector(selector);
+            if (el) el.textContent = message;
+        }
+
+        function showConfirmAction({ title, message, confirmLabel = 'Archivar', onConfirm }) {
+            state.pendingConfirmAction = onConfirm;
+            const modalEl = confirmActionModal();
+            modalEl.querySelector('#step-edit-confirm-action-title').textContent = title;
+            modalEl.querySelector('#step-edit-confirm-action-message').textContent = message;
+            modalEl.querySelector('[data-step-edit-action-confirm]').textContent = confirmLabel;
+            setModalError(modalEl, '[data-step-edit-action-error]', '');
+            showModal(modalEl);
+        }
+
+        async function refreshCoopAndProducts() {
+            if (!state.operativo || !state.coop) return;
+            const [avance, productores, coops] = await Promise.all([
+                apiGet('avance_cooperativa', { operativo_id: state.operativo.id, coop_id_real: state.coop.id_real }),
+                apiGet('productores', { operativo_id: state.operativo.id, coop_id_real: state.coop.id_real }),
+                apiGet('cooperativas', { operativo_id: state.operativo.id })
+            ]);
+            state.coop.avance = avance;
+            if (state.cache?.productoresByCoop) {
+                state.cache.productoresByCoop[state.coop.id_real] = productores;
+            }
+            if (state.cache) {
+                state.cache.coops = coops;
+                const refreshedCoop = coops.find((coop) => String(coop.id_real) === String(state.coop.id_real));
+                if (refreshedCoop) state.coop = refreshedCoop;
+            }
+        }
+
+        async function refreshCurrentForm() {
+            if (!state.operativo || !state.productor) return;
+            const productorId = String(state.productor.id_real);
+            if (state.cache?.formsByProductor) {
+                delete state.cache.formsByProductor[productorId];
+            }
+            state.form = await apiGet('form', { operativo_id: state.operativo.id, productor_id_real: state.productor.id_real });
+            if (state.cache?.formsByProductor) {
+                state.cache.formsByProductor[productorId] = state.form;
+            }
+            state.formDirty = false;
+            renderForm();
         }
 
         function setStep(step) {
@@ -774,12 +979,15 @@ $stepEditBasePath = $appBasePath ?? '';
             if (state.cache?.productoresByCoop && !state.cache.productoresByCoop[state.coop.id_real]) {
                 state.cache.productoresByCoop[state.coop.id_real] = productores;
             }
-            if (!productores.length) {
-                content().innerHTML = '<div class="step-edit-empty">No hay productores activos en esta cooperativa.</div>';
-                return;
-            }
-
-            content().innerHTML = `<div class="step-edit-grid">${productores.map((prod) => `
+            content().innerHTML = `<div class="step-edit-grid">
+                <article class="step-edit-list-card step-edit-create-card" data-step-edit-create-productor>
+                    <div>
+                        <span class="material-symbols-outlined" aria-hidden="true">person_add</span>
+                        <div class="step-edit-productor-title">Nuevo productor</div>
+                        <div class="step-edit-productor-meta">Cargar nuevo productor</div>
+                    </div>
+                </article>
+                ${productores.map((prod) => `
                 <article class="step-edit-list-card" data-prod-id="${escapeHtml(prod.id_real)}">
                     <div class="step-edit-list-title">
                         <span class="step-edit-productor-title">${escapeHtml(prod.nombre)}</span>
@@ -788,11 +996,17 @@ $stepEditBasePath = $appBasePath ?? '';
                     <div class="step-edit-productor-meta">ID: ${escapeHtml(prod.id_real)} · CUIT: ${escapeHtml(prod.cuit || 'Sin CUIT')}</div>
                     <div class="step-edit-progress"><span style="width:${pct(prod.avance?.completitud_pct)}%"></span></div>
                     <div class="step-edit-muted" style="margin-top:.4rem;">Estado: ${escapeHtml(prod.estado_relevamiento_label || estadoLabel(prod.estado_relevamiento))}</div>
+                    <div class="step-edit-card-actions">
+                        <button type="button" class="btn-icon step-edit-danger" data-step-edit-archive-productor="${escapeHtml(prod.id_real)}" title="Archivar productor" aria-label="Archivar productor">
+                            <span class="material-symbols-outlined">archive</span>
+                        </button>
+                    </div>
                 </article>
             `).join('')}</div>`;
 
             content().querySelectorAll('[data-prod-id]').forEach((card) => {
-                card.addEventListener('click', () => {
+                card.addEventListener('click', (ev) => {
+                    if (ev.target.closest('button')) return;
                     const productor = productores.find((item) => String(item.id_real) === String(card.dataset.prodId));
                     state.productor = productor;
                     loadForm();
@@ -920,7 +1134,14 @@ $stepEditBasePath = $appBasePath ?? '';
         function renderCuartelAccordion(cuartel, cuartelFields) {
             return `
                 <details class="step-edit-accordion step-edit-cuartel-accordion">
-                    <summary><span class="step-edit-accordion-title">${escapeHtml(cuartelTitle(cuartel))}</span></summary>
+                    <summary>
+                        <span class="step-edit-accordion-title">${escapeHtml(cuartelTitle(cuartel))}</span>
+                        <span class="step-edit-accordion-actions">
+                            <button type="button" class="btn-icon step-edit-danger" data-step-edit-archive-cuartel="${Number(cuartel.id)}" title="Archivar cuartel" aria-label="Archivar cuartel">
+                                <span class="material-symbols-outlined">archive</span>
+                            </button>
+                        </span>
+                    </summary>
                     <div class="step-edit-accordion-body">
                         ${fieldGroup('Datos del cuartel', cuartelFields, 'cuartel', cuartel.id) || '<div class="step-edit-empty">Este cuartel no tiene campos aplicables.</div>'}
                     </div>
@@ -935,9 +1156,22 @@ $stepEditBasePath = $appBasePath ?? '';
 
             return `
                 <details class="step-edit-accordion">
-                    <summary><span class="step-edit-accordion-title">${escapeHtml(fincaTitle(finca))}</span></summary>
+                    <summary>
+                        <span class="step-edit-accordion-title">${escapeHtml(fincaTitle(finca))}</span>
+                        <span class="step-edit-accordion-actions">
+                            <button type="button" class="btn-icon step-edit-danger" data-step-edit-archive-finca="${Number(finca.id)}" title="Archivar finca" aria-label="Archivar finca">
+                                <span class="material-symbols-outlined">archive</span>
+                            </button>
+                        </span>
+                    </summary>
                     <div class="step-edit-accordion-body">
                         ${fieldGroup('Datos de la finca', fincaFields, 'finca', finca.id)}
+                        <div class="step-edit-structure-actions">
+                            <button type="button" class="btn btn-cancelar step-edit-action-button" data-step-edit-create-cuartel="${Number(finca.id)}">
+                                <span class="material-symbols-outlined">add</span>
+                                Añadir cuartel
+                            </button>
+                        </div>
                         ${cuartelesHtml ? `<div class="step-edit-cuarteles-stack">${cuartelesHtml}</div>` : '<div class="step-edit-empty">Esta finca no tiene cuarteles asociados.</div>'}
                     </div>
                 </details>
@@ -1025,6 +1259,12 @@ $stepEditBasePath = $appBasePath ?? '';
 
             const formHtml = `
                 ${fieldGroup('Datos del productor', productorFields, 'productor')}
+                <div class="step-edit-structure-actions">
+                    <button type="button" class="btn btn-aceptar step-edit-action-button" data-step-edit-create-finca>
+                        <span class="material-symbols-outlined">add_location_alt</span>
+                        Añadir finca
+                    </button>
+                </div>
                 ${fincas.length ? `<div class="step-edit-accordion-stack">${fincas.map((finca) => renderFincaAccordion(finca, fincaFields, cuartelFields, cuarteles)).join('')}</div>` : ''}
                 ${renderOrphanCuarteles(fincas, cuarteles, cuartelFields)}
             `;
@@ -1204,6 +1444,167 @@ $stepEditBasePath = $appBasePath ?? '';
             }
         }
 
+        function openCrearProductorModal() {
+            const modalEl = createProductorModal();
+            modalEl.querySelector('[data-step-edit-new-productor-nombre]').value = '';
+            modalEl.querySelector('[data-step-edit-new-productor-cuit]').value = '';
+            setModalError(modalEl, '[data-step-edit-create-productor-error]', '');
+            showModal(modalEl);
+            modalEl.querySelector('[data-step-edit-new-productor-nombre]')?.focus();
+        }
+
+        async function crearProductorDesdeModal() {
+            const modalEl = createProductorModal();
+            try {
+                const productor = await apiPost({
+                    action: 'crear_productor',
+                    operativo_id: state.operativo.id,
+                    coop_id_real: state.coop.id_real,
+                    nombre: modalEl.querySelector('[data-step-edit-new-productor-nombre]').value,
+                    cuit: modalEl.querySelector('[data-step-edit-new-productor-cuit]').value
+                });
+                hideModal(modalEl);
+                await refreshCoopAndProducts();
+                await loadProductores();
+                state.productor = productor;
+                await loadForm();
+            } catch (e) {
+                setModalError(modalEl, '[data-step-edit-create-productor-error]', e.message);
+            }
+        }
+
+        function openCrearFincaModal() {
+            const modalEl = createFincaModal();
+            modalEl.querySelector('[data-step-edit-new-finca-codigo]').value = '';
+            modalEl.querySelector('[data-step-edit-new-finca-nombre]').value = '';
+            setModalError(modalEl, '[data-step-edit-create-finca-error]', '');
+            showModal(modalEl);
+            modalEl.querySelector('[data-step-edit-new-finca-codigo]')?.focus();
+        }
+
+        async function crearFincaDesdeModal() {
+            const modalEl = createFincaModal();
+            try {
+                await flushPendingSaves();
+                await apiPost({
+                    action: 'crear_finca',
+                    operativo_id: state.operativo.id,
+                    productor_id_real: state.productor.id_real,
+                    coop_id_real: state.coop.id_real,
+                    codigo_finca: modalEl.querySelector('[data-step-edit-new-finca-codigo]').value,
+                    nombre_finca: modalEl.querySelector('[data-step-edit-new-finca-nombre]').value
+                });
+                hideModal(modalEl);
+                await refreshCurrentForm();
+            } catch (e) {
+                setModalError(modalEl, '[data-step-edit-create-finca-error]', e.message);
+            }
+        }
+
+        async function loadVariedadesForSelect(selectEl) {
+            if (!state.variedades) {
+                state.variedades = await apiGet('variedades');
+            }
+            selectEl.innerHTML = '<option value="">Seleccionar variedad</option>' + state.variedades.map((item) => `
+                <option value="${escapeHtml(item.codigo_variedad)}">${escapeHtml(item.nombre_variedad || item.codigo_variedad)}</option>
+            `).join('');
+        }
+
+        async function openCrearCuartelModal(fincaId) {
+            state.pendingCuartelFincaId = Number(fincaId);
+            const modalEl = createCuartelModal();
+            const selectEl = modalEl.querySelector('[data-step-edit-new-cuartel-variedad]');
+            modalEl.querySelector('[data-step-edit-new-cuartel-sistema]').value = '';
+            modalEl.querySelector('[data-step-edit-new-cuartel-superficie]').value = '';
+            setModalError(modalEl, '[data-step-edit-create-cuartel-error]', '');
+            showModal(modalEl);
+            try {
+                await loadVariedadesForSelect(selectEl);
+            } catch (e) {
+                setModalError(modalEl, '[data-step-edit-create-cuartel-error]', e.message);
+            }
+            selectEl?.focus();
+        }
+
+        async function crearCuartelDesdeModal() {
+            const modalEl = createCuartelModal();
+            try {
+                await flushPendingSaves();
+                await apiPost({
+                    action: 'crear_cuartel',
+                    operativo_id: state.operativo.id,
+                    productor_id_real: state.productor.id_real,
+                    coop_id_real: state.coop.id_real,
+                    finca_id: state.pendingCuartelFincaId,
+                    variedad: modalEl.querySelector('[data-step-edit-new-cuartel-variedad]').value,
+                    sistema_conduccion: modalEl.querySelector('[data-step-edit-new-cuartel-sistema]').value,
+                    superficie_ha: modalEl.querySelector('[data-step-edit-new-cuartel-superficie]').value
+                });
+                hideModal(modalEl);
+                state.pendingCuartelFincaId = null;
+                await refreshCurrentForm();
+            } catch (e) {
+                setModalError(modalEl, '[data-step-edit-create-cuartel-error]', e.message);
+            }
+        }
+
+        function confirmarArchivarProductor(productorIdReal) {
+            const productor = (state.cache?.productoresByCoop?.[state.coop?.id_real] || []).find((item) => String(item.id_real) === String(productorIdReal));
+            showConfirmAction({
+                title: 'Archivar productor',
+                message: `El productor ${productor?.nombre || productorIdReal} sera archivado y dejara de mostrarse en el flujo activo.`,
+                confirmLabel: 'Archivar',
+                onConfirm: async () => {
+                    await apiPost({
+                        action: 'archivar_productor',
+                        operativo_id: state.operativo.id,
+                        coop_id_real: state.coop.id_real,
+                        productor_id_real: productorIdReal
+                    });
+                    await refreshCoopAndProducts();
+                    await loadProductores();
+                }
+            });
+        }
+
+        function confirmarArchivarFinca(fincaId) {
+            showConfirmAction({
+                title: 'Archivar finca',
+                message: 'La finca sera archivada y sus cuarteles asociados dejaran de mostrarse en el flujo activo.',
+                confirmLabel: 'Archivar',
+                onConfirm: async () => {
+                    await flushPendingSaves();
+                    await apiPost({
+                        action: 'archivar_finca',
+                        operativo_id: state.operativo.id,
+                        productor_id_real: state.productor.id_real,
+                        coop_id_real: state.coop.id_real,
+                        finca_id: fincaId
+                    });
+                    await refreshCurrentForm();
+                }
+            });
+        }
+
+        function confirmarArchivarCuartel(cuartelId) {
+            showConfirmAction({
+                title: 'Archivar cuartel',
+                message: 'El cuartel sera archivado y dejara de mostrarse como activo.',
+                confirmLabel: 'Archivar',
+                onConfirm: async () => {
+                    await flushPendingSaves();
+                    await apiPost({
+                        action: 'archivar_cuartel',
+                        operativo_id: state.operativo.id,
+                        productor_id_real: state.productor.id_real,
+                        coop_id_real: state.coop.id_real,
+                        cuartel_id: cuartelId
+                    });
+                    await refreshCurrentForm();
+                }
+            });
+        }
+
         function open() {
             modal().classList.remove('hidden');
             modal().setAttribute('aria-hidden', 'false');
@@ -1216,6 +1617,10 @@ $stepEditBasePath = $appBasePath ?? '';
             state.loadingToken++;
             closeConfirmModal().classList.add('hidden');
             productorEstadoModal().classList.add('hidden');
+            confirmActionModal().classList.add('hidden');
+            createProductorModal().classList.add('hidden');
+            createFincaModal().classList.add('hidden');
+            createCuartelModal().classList.add('hidden');
             modal().classList.add('hidden');
             modal().setAttribute('aria-hidden', 'true');
         }
@@ -1249,6 +1654,50 @@ $stepEditBasePath = $appBasePath ?? '';
         });
 
         document.addEventListener('click', (ev) => {
+            const createProductor = ev.target.closest?.('[data-step-edit-create-productor]');
+            if (createProductor) {
+                openCrearProductorModal();
+                return;
+            }
+
+            const archiveProductor = ev.target.closest?.('[data-step-edit-archive-productor]');
+            if (archiveProductor) {
+                ev.preventDefault();
+                ev.stopPropagation();
+                confirmarArchivarProductor(archiveProductor.dataset.stepEditArchiveProductor);
+                return;
+            }
+
+            const createFinca = ev.target.closest?.('[data-step-edit-create-finca]');
+            if (createFinca) {
+                openCrearFincaModal();
+                return;
+            }
+
+            const createCuartel = ev.target.closest?.('[data-step-edit-create-cuartel]');
+            if (createCuartel) {
+                ev.preventDefault();
+                ev.stopPropagation();
+                openCrearCuartelModal(createCuartel.dataset.stepEditCreateCuartel);
+                return;
+            }
+
+            const archiveFinca = ev.target.closest?.('[data-step-edit-archive-finca]');
+            if (archiveFinca) {
+                ev.preventDefault();
+                ev.stopPropagation();
+                confirmarArchivarFinca(Number(archiveFinca.dataset.stepEditArchiveFinca));
+                return;
+            }
+
+            const archiveCuartel = ev.target.closest?.('[data-step-edit-archive-cuartel]');
+            if (archiveCuartel) {
+                ev.preventDefault();
+                ev.stopPropagation();
+                confirmarArchivarCuartel(Number(archiveCuartel.dataset.stepEditArchiveCuartel));
+                return;
+            }
+
             if (ev.target.closest?.('[data-step-edit-cancel-close]')) {
                 closeConfirmModal().classList.add('hidden');
                 closeConfirmModal().setAttribute('aria-hidden', 'true');
@@ -1257,6 +1706,55 @@ $stepEditBasePath = $appBasePath ?? '';
 
             if (ev.target.closest?.('[data-step-edit-confirm-close]')) {
                 close();
+                return;
+            }
+
+            if (ev.target.closest?.('[data-step-edit-action-cancel]')) {
+                hideModal(confirmActionModal());
+                state.pendingConfirmAction = null;
+                return;
+            }
+
+            if (ev.target.closest?.('[data-step-edit-action-confirm]')) {
+                const action = state.pendingConfirmAction;
+                if (!action) return;
+                action().then(() => {
+                    state.pendingConfirmAction = null;
+                    hideModal(confirmActionModal());
+                }).catch((e) => {
+                    setModalError(confirmActionModal(), '[data-step-edit-action-error]', e.message);
+                });
+                return;
+            }
+
+            if (ev.target.closest?.('[data-step-edit-create-productor-cancel]')) {
+                hideModal(createProductorModal());
+                return;
+            }
+
+            if (ev.target.closest?.('[data-step-edit-create-productor-confirm]')) {
+                crearProductorDesdeModal();
+                return;
+            }
+
+            if (ev.target.closest?.('[data-step-edit-create-finca-cancel]')) {
+                hideModal(createFincaModal());
+                return;
+            }
+
+            if (ev.target.closest?.('[data-step-edit-create-finca-confirm]')) {
+                crearFincaDesdeModal();
+                return;
+            }
+
+            if (ev.target.closest?.('[data-step-edit-create-cuartel-cancel]')) {
+                state.pendingCuartelFincaId = null;
+                hideModal(createCuartelModal());
+                return;
+            }
+
+            if (ev.target.closest?.('[data-step-edit-create-cuartel-confirm]')) {
+                crearCuartelDesdeModal();
                 return;
             }
 

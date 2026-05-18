@@ -72,6 +72,9 @@ try {
                 $productorIdReal = (string)($_GET['productor_id_real'] ?? '');
                 stepEditJson(200, ['ok' => true, 'data' => $model->obtenerEstadoProductor($operativoId, $productorIdReal, $ingenieroIdReal)]);
 
+            case 'variedades':
+                stepEditJson(200, ['ok' => true, 'data' => $model->listarCodigosVariedades()]);
+
             default:
                 stepEditJson(400, ['ok' => false, 'error' => 'Accion invalida']);
         }
@@ -91,6 +94,24 @@ try {
 
             case 'save_productor_estado':
                 stepEditJson(200, ['ok' => true, 'data' => $model->guardarEstadoProductor($payload, $ingenieroIdReal)]);
+
+            case 'crear_productor':
+                stepEditJson(200, ['ok' => true, 'data' => $model->crearProductorEnCooperativaOperativo($payload, $ingenieroIdReal)]);
+
+            case 'crear_finca':
+                stepEditJson(200, ['ok' => true, 'data' => $model->crearFincaProductor($payload, $ingenieroIdReal)]);
+
+            case 'crear_cuartel':
+                stepEditJson(200, ['ok' => true, 'data' => $model->crearCuartelEnFinca($payload, $ingenieroIdReal)]);
+
+            case 'archivar_productor':
+                stepEditJson(200, ['ok' => true, 'data' => $model->archivarProductor($payload, $ingenieroIdReal)]);
+
+            case 'archivar_finca':
+                stepEditJson(200, ['ok' => true, 'data' => $model->archivarFincaProductor($payload, $ingenieroIdReal)]);
+
+            case 'archivar_cuartel':
+                stepEditJson(200, ['ok' => true, 'data' => $model->archivarCuartelProductor($payload, $ingenieroIdReal)]);
 
             default:
                 stepEditJson(400, ['ok' => false, 'error' => 'Accion invalida']);
