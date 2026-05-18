@@ -58,7 +58,6 @@ final class StepEditModel
         $this->pdo = $pdo;
         $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-        $this->ensureEstadosTable();
     }
 
     public function listarOperativosAbiertos(): array
@@ -78,35 +77,13 @@ final class StepEditModel
     public function listarCooperativasConAvance(int $operativoId, string $ingenieroIdReal): array
     {
         $this->getCamposOperativoAbierto($operativoId);
-        $coops = $this->getCoopsByIngeniero($ingenieroIdReal);
-
-        foreach ($coops as &$coop) {
-            $productores = $this->getProductoresByCooperativa((string)$coop['id_real'], $ingenieroIdReal);
-            $ids = array_values(array_map(static fn($p) => (string)$p['id_real'], $productores));
-            $coop['productores_count'] = count($ids);
-            $this->ensureProductorEstadoRows($operativoId, $ids);
-            $coop['avance'] = $this->calcularAvanceEstadosProductores($operativoId, $ids);
-        }
-        unset($coop);
-
-        return $coops;
+        return $this->getCoopsByIngenieroConAvance($operativoId, $ingenieroIdReal);
     }
 
     public function listarCooperativasLivianas(int $operativoId, string $ingenieroIdReal): array
     {
         $this->getCamposOperativoAbierto($operativoId);
-        $coops = $this->getCoopsByIngeniero($ingenieroIdReal);
-
-        foreach ($coops as &$coop) {
-            $productores = $this->getProductoresByCooperativa((string)$coop['id_real'], $ingenieroIdReal);
-            $ids = array_values(array_map(static fn($p) => (string)$p['id_real'], $productores));
-            $this->ensureProductorEstadoRows($operativoId, $ids);
-            $coop['productores_count'] = count($productores);
-            $coop['avance'] = $this->calcularAvanceEstadosProductores($operativoId, $ids);
-        }
-        unset($coop);
-
-        return $coops;
+        return $this->getCoopsByIngenieroConAvance($operativoId, $ingenieroIdReal);
     }
 
     public function listarProductoresConAvance(int $operativoId, string $coopIdReal, string $ingenieroIdReal): array
@@ -132,19 +109,7 @@ final class StepEditModel
     {
         $this->getCamposOperativoAbierto($operativoId);
         $this->assertCoopPerteneceAIngeniero($coopIdReal, $ingenieroIdReal);
-        $productores = $this->getProductoresByCooperativa($coopIdReal, $ingenieroIdReal);
-        $ids = array_values(array_map(static fn($p) => (string)$p['id_real'], $productores));
-        $estadoMap = $this->getEstadosProductores($operativoId, $ids);
-
-        foreach ($productores as &$productor) {
-            $estado = $estadoMap[(string)$productor['id_real']] ?? 'en_progreso';
-            $productor['estado_relevamiento'] = $estado;
-            $productor['estado_relevamiento_label'] = $this->estadoLabel($estado);
-            $productor['avance'] = $this->avanceDesdeEstado($estado);
-        }
-        unset($productor);
-
-        return $productores;
+        return $this->getProductoresByCooperativaConEstado($operativoId, $coopIdReal, $ingenieroIdReal);
     }
 
     public function obtenerFormularioProductor(int $operativoId, string $productorIdReal, string $ingenieroIdReal): array
@@ -171,10 +136,7 @@ final class StepEditModel
     {
         $this->assertCoopPerteneceAIngeniero($coopIdReal, $ingenieroIdReal);
         $this->getCamposOperativoAbierto($operativoId);
-        $productores = $this->getProductoresByCooperativa($coopIdReal, $ingenieroIdReal);
-        $ids = array_values(array_map(static fn($p) => (string)$p['id_real'], $productores));
-
-        return $this->calcularAvanceEstadosProductores($operativoId, $ids);
+        return $this->calcularAvanceCooperativaAgregado($operativoId, $coopIdReal, $ingenieroIdReal);
     }
 
     public function obtenerAvanceProductorPublico(int $operativoId, string $productorIdReal, string $ingenieroIdReal): array
@@ -188,16 +150,10 @@ final class StepEditModel
     public function obtenerAvanceGeneral(int $operativoId, string $ingenieroIdReal): array
     {
         $this->getCamposOperativoAbierto($operativoId);
-        $coops = $this->listarCooperativasConAvance($operativoId, $ingenieroIdReal);
-        $productorIds = [];
-        foreach ($coops as $coop) {
-            foreach ($this->getProductoresByCooperativa((string)$coop['id_real'], $ingenieroIdReal) as $productor) {
-                $productorIds[] = (string)$productor['id_real'];
-            }
-        }
+        $coops = $this->getCoopsByIngenieroConAvance($operativoId, $ingenieroIdReal);
 
         return [
-            'general' => $this->calcularAvanceEstadosProductores($operativoId, array_values(array_unique($productorIds))),
+            'general' => $this->calcularAvanceGeneralAgregado($operativoId, $ingenieroIdReal),
             'cooperativas' => $coops,
         ];
     }
@@ -321,56 +277,9 @@ final class StepEditModel
         return $stmt->fetchAll() ?: [];
     }
 
-    private function ensureEstadosTable(): void
-    {
-        $this->pdo->exec("
-            CREATE TABLE IF NOT EXISTS relevamiento_productor_estados (
-                id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-                operativo_id INT(11) NOT NULL,
-                productor_id_real VARCHAR(20) NOT NULL,
-                estado ENUM('en_progreso','completado') NOT NULL DEFAULT 'en_progreso',
-                updated_by_real VARCHAR(20) NULL,
-                created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                PRIMARY KEY (id),
-                UNIQUE KEY uq_relevamiento_productor_estado (operativo_id, productor_id_real),
-                KEY idx_relevamiento_productor_estados_operativo_estado (operativo_id, estado),
-                KEY idx_relevamiento_productor_estados_productor (productor_id_real),
-                CONSTRAINT fk_relevamiento_productor_estados_operativo
-                    FOREIGN KEY (operativo_id)
-                    REFERENCES relevamiento_operativos (id)
-                    ON DELETE CASCADE
-                    ON UPDATE CASCADE
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-        ");
-    }
-
-    private function ensureProductorEstadoRows(int $operativoId, array $productorIdsReal): void
-    {
-        $ids = array_values(array_unique(array_filter(array_map(static fn($id) => trim((string)$id), $productorIdsReal))));
-        if (!$ids) {
-            return;
-        }
-
-        $stmt = $this->pdo->prepare("
-            INSERT IGNORE INTO relevamiento_productor_estados
-                (operativo_id, productor_id_real, estado)
-            VALUES
-                (:operativo_id, :productor_id_real, 'en_progreso')
-        ");
-
-        foreach ($ids as $idReal) {
-            $stmt->execute([
-                ':operativo_id' => $operativoId,
-                ':productor_id_real' => $idReal,
-            ]);
-        }
-    }
-
     private function getEstadosProductores(int $operativoId, array $productorIdsReal): array
     {
         $ids = array_values(array_unique(array_filter(array_map(static fn($id) => trim((string)$id), $productorIdsReal))));
-        $this->ensureProductorEstadoRows($operativoId, $ids);
         if (!$ids) {
             return [];
         }
@@ -401,7 +310,6 @@ final class StepEditModel
 
     private function getEstadoProductor(int $operativoId, string $productorIdReal): string
     {
-        $this->ensureProductorEstadoRows($operativoId, [$productorIdReal]);
         $stmt = $this->pdo->prepare("
             SELECT estado
             FROM relevamiento_productor_estados
@@ -455,6 +363,71 @@ final class StepEditModel
         ];
     }
 
+    private function buildAvanceFromCounts(int $total, int $completos): array
+    {
+        $enProgreso = max(0, $total - $completos);
+
+        return [
+            'esperados' => $total,
+            'completos' => $completos,
+            'auditados' => $completos,
+            'pendientes' => $enProgreso,
+            'en_progreso' => $enProgreso,
+            'completitud_pct' => $total > 0 ? round(($completos / $total) * 100, 2) : 0.0,
+            'actividad_pct' => $total > 0 ? round(($completos / $total) * 100, 2) : 0.0,
+            'medicion' => 'productores',
+        ];
+    }
+
+    private function calcularAvanceCooperativaAgregado(int $operativoId, string $coopIdReal, string $ingenieroIdReal): array
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT
+                COUNT(rp.productor_id_real) AS total_productores,
+                COALESCE(SUM(CASE WHEN rpe.estado = 'completado' THEN 1 ELSE 0 END), 0) AS completados
+            FROM (
+                SELECT DISTINCT rpc.cooperativa_id_real, rpc.productor_id_real
+                FROM rel_productor_coop rpc
+                JOIN usuarios up ON up.id_real = rpc.productor_id_real
+                    AND up.rol = 'productor'
+                    AND up.archivado = 0
+                WHERE rpc.cooperativa_id_real = :coop
+            ) rp
+            JOIN rel_coop_ingeniero rci ON rci.cooperativa_id_real = rp.cooperativa_id_real
+                AND rci.ingeniero_id_real = :ing
+            LEFT JOIN relevamiento_productor_estados rpe ON rpe.operativo_id = :op
+                AND rpe.productor_id_real = rp.productor_id_real
+        ");
+        $stmt->execute([':coop' => $coopIdReal, ':ing' => $ingenieroIdReal, ':op' => $operativoId]);
+        $row = $stmt->fetch() ?: [];
+
+        return $this->buildAvanceFromCounts((int)($row['total_productores'] ?? 0), (int)($row['completados'] ?? 0));
+    }
+
+    private function calcularAvanceGeneralAgregado(int $operativoId, string $ingenieroIdReal): array
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT
+                COUNT(rp.productor_id_real) AS total_productores,
+                COALESCE(SUM(CASE WHEN rpe.estado = 'completado' THEN 1 ELSE 0 END), 0) AS completados
+            FROM rel_coop_ingeniero rci
+            JOIN (
+                SELECT DISTINCT rpc.cooperativa_id_real, rpc.productor_id_real
+                FROM rel_productor_coop rpc
+                JOIN usuarios up ON up.id_real = rpc.productor_id_real
+                    AND up.rol = 'productor'
+                    AND up.archivado = 0
+            ) rp ON rp.cooperativa_id_real = rci.cooperativa_id_real
+            LEFT JOIN relevamiento_productor_estados rpe ON rpe.operativo_id = :op
+                AND rpe.productor_id_real = rp.productor_id_real
+            WHERE rci.ingeniero_id_real = :ing
+        ");
+        $stmt->execute([':op' => $operativoId, ':ing' => $ingenieroIdReal]);
+        $row = $stmt->fetch() ?: [];
+
+        return $this->buildAvanceFromCounts((int)($row['total_productores'] ?? 0), (int)($row['completados'] ?? 0));
+    }
+
     private function avanceDesdeEstado(string $estado): array
     {
         $completo = $estado === 'completado' ? 1 : 0;
@@ -475,6 +448,46 @@ final class StepEditModel
         return $estado === 'completado' ? 'Completado' : 'En progreso';
     }
 
+    private function getCoopsByIngenieroConAvance(int $operativoId, string $ingenieroIdReal): array
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT
+                u.id_real,
+                COALESCE(NULLIF(TRIM(ui.nombre), ''), NULLIF(TRIM(u.razon_social), ''), NULLIF(TRIM(u.usuario), ''), u.id_real) AS nombre,
+                NULLIF(NULLIF(TRIM(CAST(u.cuit AS CHAR)), ''), '0') AS cuit,
+                COUNT(rp.productor_id_real) AS productores_count,
+                COALESCE(SUM(CASE WHEN rpe.estado = 'completado' THEN 1 ELSE 0 END), 0) AS completados
+            FROM rel_coop_ingeniero rci
+            JOIN usuarios u ON u.id_real = rci.cooperativa_id_real AND u.rol = 'cooperativa'
+            LEFT JOIN usuarios_info ui ON ui.usuario_id = u.id
+            LEFT JOIN (
+                SELECT DISTINCT rpc.cooperativa_id_real, rpc.productor_id_real
+                FROM rel_productor_coop rpc
+                JOIN usuarios up ON up.id_real = rpc.productor_id_real
+                    AND up.rol = 'productor'
+                    AND up.archivado = 0
+            ) rp ON rp.cooperativa_id_real = rci.cooperativa_id_real
+            LEFT JOIN relevamiento_productor_estados rpe ON rpe.operativo_id = :op
+                AND rpe.productor_id_real = rp.productor_id_real
+            WHERE rci.ingeniero_id_real = :ing
+            GROUP BY u.id_real, nombre, cuit
+            ORDER BY nombre ASC
+        ");
+        $stmt->execute([':op' => $operativoId, ':ing' => $ingenieroIdReal]);
+
+        $coops = $stmt->fetchAll() ?: [];
+        foreach ($coops as &$coop) {
+            $total = (int)($coop['productores_count'] ?? 0);
+            $completados = (int)($coop['completados'] ?? 0);
+            unset($coop['completados']);
+            $coop['productores_count'] = $total;
+            $coop['avance'] = $this->buildAvanceFromCounts($total, $completados);
+        }
+        unset($coop);
+
+        return $coops;
+    }
+
     private function getCoopsByIngeniero(string $ingenieroIdReal): array
     {
         $stmt = $this->pdo->prepare("
@@ -489,6 +502,40 @@ final class StepEditModel
         ");
         $stmt->execute([':ing' => $ingenieroIdReal]);
         return $stmt->fetchAll() ?: [];
+    }
+
+    private function getProductoresByCooperativaConEstado(int $operativoId, string $coopIdReal, string $ingenieroIdReal): array
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT DISTINCT
+                   rpc.productor_id_real AS id_real,
+                   COALESCE(NULLIF(TRIM(ui.nombre), ''), NULLIF(TRIM(u.razon_social), ''), NULLIF(TRIM(u.usuario), ''), rpc.productor_id_real) AS nombre,
+                   NULLIF(NULLIF(TRIM(CAST(u.cuit AS CHAR)), ''), '0') AS cuit,
+                   COALESCE(rpe.estado, 'en_progreso') AS estado_relevamiento
+            FROM rel_productor_coop rpc
+            JOIN rel_coop_ingeniero rci ON rci.cooperativa_id_real = rpc.cooperativa_id_real
+            JOIN usuarios u ON u.id_real = rpc.productor_id_real AND u.rol = 'productor'
+            LEFT JOIN usuarios_info ui ON ui.usuario_id = u.id
+            LEFT JOIN relevamiento_productor_estados rpe ON rpe.operativo_id = :op
+                AND rpe.productor_id_real = rpc.productor_id_real
+            WHERE rpc.cooperativa_id_real = :coop
+              AND rci.ingeniero_id_real = :ing
+              AND u.archivado = 0
+            ORDER BY nombre ASC
+        ");
+        $stmt->execute([':op' => $operativoId, ':coop' => $coopIdReal, ':ing' => $ingenieroIdReal]);
+
+        $productores = $stmt->fetchAll() ?: [];
+        foreach ($productores as &$productor) {
+            $estado = (string)($productor['estado_relevamiento'] ?? 'en_progreso');
+            $estado = in_array($estado, ['en_progreso', 'completado'], true) ? $estado : 'en_progreso';
+            $productor['estado_relevamiento'] = $estado;
+            $productor['estado_relevamiento_label'] = $this->estadoLabel($estado);
+            $productor['avance'] = $this->avanceDesdeEstado($estado);
+        }
+        unset($productor);
+
+        return $productores;
     }
 
     private function getProductoresByCooperativa(string $coopIdReal, string $ingenieroIdReal): array

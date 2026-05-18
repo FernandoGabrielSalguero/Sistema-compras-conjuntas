@@ -626,74 +626,12 @@ $stepEditBasePath = $appBasePath ?? '';
             subtitle().textContent = op.nombre;
             renderFlowbar();
 
-            let done = 0;
-            let total = 1;
-            const update = (text) => {
-                if (token !== state.loadingToken) return;
-                renderOperativoLoader(text, done, total);
-            };
-
-            update('Cargando cooperativas del operativo...');
+            renderOperativoLoader('Cargando cooperativas y avances...', 0, 1);
             const coops = await apiGet('cooperativas', { operativo_id: op.id });
             if (token !== state.loadingToken) return;
             state.cache.coops = coops;
-            done++;
-            total = Math.max(1, 1 + (coops.length * 2));
-            update('Calculando avances de cooperativas...');
-
-            const runLimited = async (items, limit, worker) => {
-                const queue = [...items];
-                const workers = Array.from({ length: Math.min(limit, queue.length) }, async () => {
-                    while (queue.length && token === state.loadingToken) {
-                        await worker(queue.shift());
-                    }
-                });
-                await Promise.all(workers);
-            };
-
-            await runLimited(coops, 3, async (coop) => {
-                let productores = [];
-                try {
-                    const result = await Promise.all([
-                        apiGet('avance_cooperativa', { operativo_id: op.id, coop_id_real: coop.id_real }),
-                        apiGet('productores', { operativo_id: op.id, coop_id_real: coop.id_real })
-                    ]);
-                    coop.avance = result[0];
-                    productores = result[1];
-                } catch (e) {
-                    console.warn('[StepEdit] precarga cooperativa', e);
-                    coop.avance = emptyAdvance();
-                }
-                state.cache.productoresByCoop[coop.id_real] = productores;
-                done += 2;
-                total += productores.length;
-                update(`Cargando productores de ${coop.nombre}...`);
-            });
-
-            const allProductores = [];
-            Object.values(state.cache.productoresByCoop).forEach((list) => {
-                list.forEach((prod) => allProductores.push(prod));
-            });
-
-            update('Calculando avances de productores...');
-            await runLimited(allProductores, 4, async (prod) => {
-                try {
-                    prod.avance = await apiGet('avance_productor', {
-                        operativo_id: op.id,
-                        productor_id_real: prod.id_real
-                    });
-                } catch (e) {
-                    console.warn('[StepEdit] precarga productor', e);
-                    prod.avance = emptyAdvance();
-                }
-                done++;
-                update(`Calculando avance de ${prod.nombre || prod.id_real}...`);
-            });
-
-            if (token !== state.loadingToken) return;
             state.cache.general = sumAdvances(coops);
-            done = total;
-            update('Operativo listo.');
+            renderOperativoLoader('Operativo listo.', 1, 1);
             setTimeout(() => {
                 if (token === state.loadingToken) loadCooperativas();
             }, 180);
@@ -750,6 +688,9 @@ $stepEditBasePath = $appBasePath ?? '';
             renderLoading('Cargando productores...');
 
             const productores = state.cache?.productoresByCoop?.[state.coop.id_real] || await apiGet('productores', { operativo_id: state.operativo.id, coop_id_real: state.coop.id_real });
+            if (state.cache?.productoresByCoop && !state.cache.productoresByCoop[state.coop.id_real]) {
+                state.cache.productoresByCoop[state.coop.id_real] = productores;
+            }
             if (!productores.length) {
                 content().innerHTML = '<div class="step-edit-empty">No hay productores activos en esta cooperativa.</div>';
                 return;
