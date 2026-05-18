@@ -114,6 +114,20 @@ $stepEditBasePath = $appBasePath ?? '';
         color: #0f172a;
     }
 
+    .step-edit-productor-title {
+        display: block;
+        min-width: 0;
+        overflow-wrap: anywhere;
+        font-size: 1.02rem;
+        line-height: 1.25;
+    }
+
+    .step-edit-productor-meta {
+        margin-top: .35rem;
+        font-size: .84rem;
+        color: rgba(15, 23, 42, .62);
+    }
+
     .step-edit-muted {
         color: rgba(15, 23, 42, .65);
         font-size: .86rem;
@@ -256,6 +270,75 @@ $stepEditBasePath = $appBasePath ?? '';
         border-radius: 8px;
         color: rgba(15, 23, 42, .7);
         background: #f8fafc;
+    }
+
+    .step-edit-accordion-stack {
+        display: grid;
+        gap: .75rem;
+    }
+
+    .step-edit-accordion {
+        border: 1px solid rgba(148, 163, 184, .42);
+        border-radius: 8px;
+        background: #fff;
+        overflow: hidden;
+    }
+
+    .step-edit-accordion summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .75rem;
+        padding: .85rem 1rem;
+        cursor: pointer;
+        font-weight: 800;
+        color: #0f172a;
+        list-style: none;
+        background: #f8fafc;
+    }
+
+    .step-edit-accordion summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .step-edit-accordion summary::after {
+        content: 'expand_more';
+        font-family: 'Material Symbols Outlined';
+        font-weight: normal;
+        font-style: normal;
+        font-size: 22px;
+        line-height: 1;
+        transition: transform .16s ease;
+    }
+
+    .step-edit-accordion[open] > summary::after {
+        transform: rotate(180deg);
+    }
+
+    .step-edit-accordion-body {
+        display: grid;
+        gap: .75rem;
+        padding: .9rem;
+    }
+
+    .step-edit-cuarteles-stack {
+        display: grid;
+        gap: .65rem;
+    }
+
+    .step-edit-cuartel-accordion {
+        border-color: rgba(100, 116, 139, .28);
+    }
+
+    .step-edit-cuartel-accordion summary {
+        padding: .7rem .85rem;
+        background: #fff;
+        border-bottom: 1px solid rgba(148, 163, 184, .22);
+    }
+
+    .step-edit-accordion-title {
+        min-width: 0;
+        overflow-wrap: anywhere;
     }
 
     .step-edit-loader {
@@ -699,10 +782,10 @@ $stepEditBasePath = $appBasePath ?? '';
             content().innerHTML = `<div class="step-edit-grid">${productores.map((prod) => `
                 <article class="step-edit-list-card" data-prod-id="${escapeHtml(prod.id_real)}">
                     <div class="step-edit-list-title">
-                        <span>${escapeHtml(prod.nombre)}</span>
+                        <span class="step-edit-productor-title">${escapeHtml(prod.nombre)}</span>
                         ${estadoBadge(prod.estado_relevamiento)}
                     </div>
-                    <div class="step-edit-muted">${escapeHtml(prod.id_real)} · ${escapeHtml(prod.cuit || 'Sin CUIT')}</div>
+                    <div class="step-edit-productor-meta">ID: ${escapeHtml(prod.id_real)} · CUIT: ${escapeHtml(prod.cuit || 'Sin CUIT')}</div>
                     <div class="step-edit-progress"><span style="width:${pct(prod.avance?.completitud_pct)}%"></span></div>
                     <div class="step-edit-muted" style="margin-top:.4rem;">Estado: ${escapeHtml(prod.estado_relevamiento_label || estadoLabel(prod.estado_relevamiento))}</div>
                 </article>
@@ -806,6 +889,79 @@ $stepEditBasePath = $appBasePath ?? '';
             `;
         }
 
+        function fincaTitle(finca) {
+            const nombre = String(finca?.nombre_finca ?? '').trim();
+            return nombre || 'Finca sin nombre';
+        }
+
+        function cuartelTitle(cuartel) {
+            const variedad = String(
+                cuartel?.variedad_display ??
+                cuartel?.nombre_variedad ??
+                cuartel?.variedad ??
+                ''
+            ).trim();
+            const sistema = String(cuartel?.sistema_conduccion ?? '').trim();
+            const parts = [variedad, sistema].filter(Boolean);
+            return parts.length ? parts.join(' · ') : 'Cuartel sin identificar';
+        }
+
+        function cuartelesForFinca(finca, cuarteles) {
+            const fincaId = String(finca?.id ?? '');
+            const codigoFinca = String(finca?.codigo_finca ?? '').trim();
+            return cuarteles.filter((cuartel) => {
+                const cuartelFincaId = String(cuartel?.finca_id ?? '');
+                const cuartelCodigoFinca = String(cuartel?.codigo_finca ?? '').trim();
+                return (fincaId && cuartelFincaId === fincaId) ||
+                    (!cuartelFincaId && codigoFinca && cuartelCodigoFinca === codigoFinca);
+            });
+        }
+
+        function renderCuartelAccordion(cuartel, cuartelFields) {
+            return `
+                <details class="step-edit-accordion step-edit-cuartel-accordion">
+                    <summary><span class="step-edit-accordion-title">${escapeHtml(cuartelTitle(cuartel))}</span></summary>
+                    <div class="step-edit-accordion-body">
+                        ${fieldGroup('Datos del cuartel', cuartelFields, 'cuartel', cuartel.id) || '<div class="step-edit-empty">Este cuartel no tiene campos aplicables.</div>'}
+                    </div>
+                </details>
+            `;
+        }
+
+        function renderFincaAccordion(finca, fincaFields, cuartelFields, cuarteles) {
+            const cuartelesHtml = cuartelesForFinca(finca, cuarteles)
+                .map((cuartel) => renderCuartelAccordion(cuartel, cuartelFields))
+                .join('');
+
+            return `
+                <details class="step-edit-accordion">
+                    <summary><span class="step-edit-accordion-title">${escapeHtml(fincaTitle(finca))}</span></summary>
+                    <div class="step-edit-accordion-body">
+                        ${fieldGroup('Datos de la finca', fincaFields, 'finca', finca.id)}
+                        ${cuartelesHtml ? `<div class="step-edit-cuarteles-stack">${cuartelesHtml}</div>` : '<div class="step-edit-empty">Esta finca no tiene cuarteles asociados.</div>'}
+                    </div>
+                </details>
+            `;
+        }
+
+        function renderOrphanCuarteles(fincas, cuarteles, cuartelFields) {
+            const assigned = new Set();
+            fincas.forEach((finca) => {
+                cuartelesForFinca(finca, cuarteles).forEach((cuartel) => assigned.add(String(cuartel.id)));
+            });
+            const orphans = cuarteles.filter((cuartel) => !assigned.has(String(cuartel.id)));
+            if (!orphans.length) return '';
+
+            return `
+                <section class="step-edit-field-group">
+                    <h3>Cuarteles sin finca asociada</h3>
+                    <div class="step-edit-cuarteles-stack">
+                        ${orphans.map((cuartel) => renderCuartelAccordion(cuartel, cuartelFields)).join('')}
+                    </div>
+                </section>
+            `;
+        }
+
         function isFilledValue(value) {
             return String(value ?? '').trim() !== '';
         }
@@ -869,8 +1025,8 @@ $stepEditBasePath = $appBasePath ?? '';
 
             const formHtml = `
                 ${fieldGroup('Datos del productor', productorFields, 'productor')}
-                ${fincas.map((finca) => fieldGroup(`Finca ${finca.codigo_finca || finca.id} · ${finca.nombre_finca || ''}`, fincaFields, 'finca', finca.id)).join('')}
-                ${cuarteles.map((cuartel) => fieldGroup(`Cuartel ${cuartel.codigo_cuartel || cuartel.id} · Finca ${cuartel.codigo_finca || ''}`, cuartelFields, 'cuartel', cuartel.id)).join('')}
+                ${fincas.length ? `<div class="step-edit-accordion-stack">${fincas.map((finca) => renderFincaAccordion(finca, fincaFields, cuartelFields, cuarteles)).join('')}</div>` : ''}
+                ${renderOrphanCuarteles(fincas, cuarteles, cuartelFields)}
             `;
 
             content().innerHTML = `

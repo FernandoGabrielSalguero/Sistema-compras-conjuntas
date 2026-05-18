@@ -590,7 +590,7 @@ final class StepEditModel
     private function getCuartelesProductor(string $productorIdReal): array
     {
         $stmt = $this->pdo->prepare("
-            SELECT DISTINCT pc.id, pc.finca_id, pc.codigo_finca, pc.nombre_finca, pc.codigo_cuartel, pc.variedad
+            SELECT DISTINCT pc.id, pc.finca_id, pc.codigo_finca, pc.nombre_finca, pc.codigo_cuartel, pc.variedad, pc.sistema_conduccion
             FROM prod_cuartel pc
             LEFT JOIN prod_fincas pf ON pf.id = pc.finca_id
             WHERE (pc.id_responsable_real = :prod OR pf.productor_id_real = :prod)
