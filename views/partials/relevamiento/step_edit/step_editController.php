@@ -67,6 +67,11 @@ try {
                 $operativoId = (int)($_GET['operativo_id'] ?? 0);
                 stepEditJson(200, ['ok' => true, 'data' => $model->obtenerAvanceGeneral($operativoId, $ingenieroIdReal)]);
 
+            case 'estado_productor':
+                $operativoId = (int)($_GET['operativo_id'] ?? 0);
+                $productorIdReal = (string)($_GET['productor_id_real'] ?? '');
+                stepEditJson(200, ['ok' => true, 'data' => $model->obtenerEstadoProductor($operativoId, $productorIdReal, $ingenieroIdReal)]);
+
             default:
                 stepEditJson(400, ['ok' => false, 'error' => 'Accion invalida']);
         }
@@ -83,6 +88,9 @@ try {
         switch ($action) {
             case 'save_field':
                 stepEditJson(200, ['ok' => true, 'data' => $model->guardarCampo($payload, $ingenieroIdReal)]);
+
+            case 'save_productor_estado':
+                stepEditJson(200, ['ok' => true, 'data' => $model->guardarEstadoProductor($payload, $ingenieroIdReal)]);
 
             default:
                 stepEditJson(400, ['ok' => false, 'error' => 'Accion invalida']);

@@ -937,7 +937,20 @@ created_by_real	varchar(20)	YES	MUL
 created_at	timestamp	NO		current_timestamp()	
 updated_at	timestamp	YES		current_timestamp()	on update current_timestamp()
 
-🔁 Relaciones (entrantes): relevamiento_operativo_campos, relevamiento_cambios
+🔁 Relaciones (entrantes): relevamiento_operativo_campos, relevamiento_productor_estados, relevamiento_cambios
+📄 Tabla: relevamiento_productor_estados
+Columna	Tipo	Nulo	Clave	Default	Extra
+id	bigint(20) unsigned	NO	PRI		auto_increment
+operativo_id	int(11)	NO	MUL		
+productor_id_real	varchar(20)	NO	MUL		
+estado	enum('en_progreso','completado')	NO		en_progreso	
+updated_by_real	varchar(20)	YES			
+created_at	timestamp	NO		current_timestamp()	
+updated_at	timestamp	YES		current_timestamp()	on update current_timestamp()
+
+🔗 Relaciones (salientes):
+Columna operativo_id referencia a relevamiento_operativos.id
+🔁 Relaciones (entrantes): relevamiento_operativos
 📄 Tabla: serviciosVendimiales_centrifugadores
 Columna	Tipo	Nulo	Clave	Default	Extra
 id	bigint(20) unsigned	NO	PRI		auto_increment

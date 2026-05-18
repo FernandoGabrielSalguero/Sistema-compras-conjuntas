@@ -213,6 +213,43 @@ $stepEditBasePath = $appBasePath ?? '';
         color: #b91c1c;
     }
 
+    .step-edit-status-badge {
+        display: inline-flex;
+        align-items: center;
+        width: fit-content;
+        min-height: 26px;
+        border-radius: 999px;
+        padding: .22rem .6rem;
+        font-size: .78rem;
+        font-weight: 800;
+        border: 1px solid rgba(100, 116, 139, .28);
+        background: #f8fafc;
+        color: #334155;
+    }
+
+    .step-edit-status-badge.is-completado {
+        border-color: rgba(22, 163, 74, .32);
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .step-edit-status-badge.is-en-progreso {
+        border-color: rgba(37, 99, 235, .28);
+        background: #dbeafe;
+        color: #1d4ed8;
+    }
+
+    .step-edit-status-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .5rem;
+        margin-top: .75rem;
+    }
+
+    .step-edit-modal .modal-content {
+        max-width: 460px;
+    }
+
     .step-edit-empty {
         padding: 18px;
         border: 1px dashed rgba(100, 116, 139, .45);
@@ -318,7 +355,7 @@ $stepEditBasePath = $appBasePath ?? '';
                 <h2 id="step-edit-title">Operativo de relevamiento</h2>
                 <p class="step-edit-subtitle" id="step-edit-subtitle">Selecciona un operativo abierto para empezar.</p>
             </div>
-            <button type="button" class="btn-icon" onclick="StepEdit.close()" aria-label="Cerrar">
+            <button type="button" class="btn-icon" onclick="StepEdit.requestClose()" aria-label="Cerrar">
                 <span class="material-symbols-outlined">close</span>
             </button>
         </div>
@@ -327,6 +364,32 @@ $stepEditBasePath = $appBasePath ?? '';
             <div id="step-edit-flowbar" class="step-edit-flowbar"></div>
             <div id="step-edit-progress" class="step-edit-progress-stack"></div>
             <div id="step-edit-content"></div>
+        </div>
+    </div>
+</div>
+
+<div id="step-edit-confirm-close-modal" class="step-edit-modal modal hidden" aria-hidden="true">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="step-edit-confirm-close-title">
+        <h3 id="step-edit-confirm-close-title">Cerrar carga</h3>
+        <div class="modal-body">
+            <p>Si cerras este modal, podrias perder el contexto de carga o tener que volver a cargar datos del operativo.</p>
+        </div>
+        <div class="form-buttons">
+            <button type="button" class="btn btn-cancelar" data-step-edit-cancel-close>Cancelar</button>
+            <button type="button" class="btn btn-aceptar" data-step-edit-confirm-close>Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<div id="step-edit-productor-estado-modal" class="step-edit-modal modal hidden" aria-hidden="true">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="step-edit-productor-estado-title">
+        <h3 id="step-edit-productor-estado-title">Estado del productor</h3>
+        <div class="modal-body">
+            <p>Selecciona el estado en el que debe quedar este productor antes de volver.</p>
+        </div>
+        <div class="form-buttons">
+            <button type="button" class="btn btn-cancelar" data-step-edit-state="en_progreso">En progreso</button>
+            <button type="button" class="btn btn-aceptar" data-step-edit-state="completado">Completado</button>
         </div>
     </div>
 </div>
@@ -342,7 +405,9 @@ $stepEditBasePath = $appBasePath ?? '';
             form: null,
             cache: null,
             loadingToken: 0,
-            saveTimers: new Map()
+            saveTimers: new Map(),
+            formDirty: false,
+            pendingBackAfterState: false
         };
 
         const modal = () => document.getElementById('step-edit-modal');
@@ -350,6 +415,8 @@ $stepEditBasePath = $appBasePath ?? '';
         const progress = () => document.getElementById('step-edit-progress');
         const flowbar = () => document.getElementById('step-edit-flowbar');
         const subtitle = () => document.getElementById('step-edit-subtitle');
+        const closeConfirmModal = () => document.getElementById('step-edit-confirm-close-modal');
+        const productorEstadoModal = () => document.getElementById('step-edit-productor-estado-modal');
 
         function escapeHtml(value) {
             return String(value ?? '')
@@ -375,12 +442,38 @@ $stepEditBasePath = $appBasePath ?? '';
         function progressBar(avance, label) {
             const completitud = pct(avance?.completitud_pct);
             const actividad = pct(avance?.actividad_pct);
+            const unidad = avance?.medicion === 'productores' ? 'productores completados' : 'campos completos';
+            const progreso = Number(avance?.en_progreso ?? avance?.pendientes ?? 0);
             return `
                 <div class="step-edit-progress-card">
                     <div class="step-edit-list-title"><span>${escapeHtml(label)}</span><span>${completitud.toFixed(0)}%</span></div>
-                    <div class="step-edit-muted">${Number(avance?.completos || 0)} de ${Number(avance?.esperados || 0)} campos completos</div>
+                    <div class="step-edit-muted">${Number(avance?.completos || 0)} de ${Number(avance?.esperados || 0)} ${unidad}</div>
                     <div class="step-edit-progress"><span style="width:${completitud}%"></span></div>
-                    <div class="step-edit-muted" style="margin-top:.4rem;">Actividad: ${actividad.toFixed(0)}%</div>
+                    <div class="step-edit-muted" style="margin-top:.4rem;">En progreso: ${progreso} · Actividad: ${actividad.toFixed(0)}%</div>
+                </div>
+            `;
+        }
+
+        function estadoLabel(estado) {
+            return estado === 'completado' ? 'Completado' : 'En progreso';
+        }
+
+        function estadoBadge(estado) {
+            const normalized = estado === 'completado' ? 'completado' : 'en_progreso';
+            const className = normalized === 'completado' ? 'is-completado' : 'is-en-progreso';
+            return `<span class="step-edit-status-badge ${className}">${estadoLabel(normalized)}</span>`;
+        }
+
+        function productorStatusPanel() {
+            const estadoActual = state.form?.estado_relevamiento?.estado || state.productor?.estado_relevamiento || 'en_progreso';
+            return `
+                <div class="step-edit-progress-card">
+                    <div class="step-edit-list-title"><span>Productor</span>${estadoBadge(estadoActual)}</div>
+                    <div class="step-edit-muted" style="margin-top:.4rem;">Estado actual: ${estadoLabel(estadoActual)}</div>
+                    <div class="step-edit-status-actions">
+                        <button type="button" class="btn btn-cancelar" data-step-edit-save-state-button="en_progreso">En progreso</button>
+                        <button type="button" class="btn btn-aceptar" data-step-edit-save-state-button="completado">Completado</button>
+                    </div>
                 </div>
             `;
         }
@@ -442,7 +535,7 @@ $stepEditBasePath = $appBasePath ?? '';
         }
 
         function emptyAdvance() {
-            return { esperados: 0, completos: 0, auditados: 0, pendientes: 0, completitud_pct: 0, actividad_pct: 0 };
+            return { esperados: 0, completos: 0, auditados: 0, pendientes: 0, en_progreso: 0, completitud_pct: 0, actividad_pct: 0, medicion: 'productores' };
         }
 
         function sumAdvances(items) {
@@ -454,8 +547,10 @@ $stepEditBasePath = $appBasePath ?? '';
                 total.auditados += Number(avance.auditados || 0);
             });
             total.pendientes = Math.max(0, total.esperados - total.completos);
+            total.en_progreso = total.pendientes;
             total.completitud_pct = total.esperados > 0 ? (total.completos / total.esperados) * 100 : 0;
             total.actividad_pct = total.esperados > 0 ? (total.auditados / total.esperados) * 100 : 0;
+            total.medicion = 'productores';
             return total;
         }
 
@@ -470,7 +565,7 @@ $stepEditBasePath = $appBasePath ?? '';
                     const refreshedCoop = (data.cooperativas || []).find((coop) => String(coop.id_real) === String(state.coop.id_real));
                     if (refreshedCoop) state.coop = refreshedCoop;
                 }
-                progress().innerHTML = progressBar(data.general, 'Operativo general');
+                progress().innerHTML = '';
                 return data;
             } catch (e) {
                 progress().innerHTML = '';
@@ -484,6 +579,7 @@ $stepEditBasePath = $appBasePath ?? '';
             state.coop = null;
             state.productor = null;
             state.form = null;
+            state.formDirty = false;
             state.cache = null;
             state.loadingToken++;
             subtitle().textContent = 'Selecciona un operativo abierto para empezar.';
@@ -524,6 +620,7 @@ $stepEditBasePath = $appBasePath ?? '';
             state.coop = null;
             state.productor = null;
             state.form = null;
+            state.formDirty = false;
             state.cache = { operativoId: Number(op.id), coops: [], productoresByCoop: {}, formsByProductor: {}, general: emptyAdvance() };
             setStep('cargando');
             subtitle().textContent = op.nombre;
@@ -608,6 +705,7 @@ $stepEditBasePath = $appBasePath ?? '';
             state.coop = null;
             state.productor = null;
             state.form = null;
+            state.formDirty = false;
             subtitle().textContent = state.operativo.nombre;
             renderFlowbar();
             renderLoading('Cargando cooperativas asociadas...');
@@ -617,9 +715,7 @@ $stepEditBasePath = $appBasePath ?? '';
                 content().innerHTML = '<div class="step-edit-empty">No tenes cooperativas asociadas para este operativo.</div>';
                 return;
             }
-            if (state.cache?.general) {
-                progress().innerHTML = progressBar(state.cache.general, 'Operativo general');
-            }
+            progress().innerHTML = '';
 
             content().innerHTML = `<div class="step-edit-grid">${coops.map((coop) => `
                 <article class="step-edit-list-card" data-coop-id="${escapeHtml(coop.id_real)}">
@@ -627,7 +723,8 @@ $stepEditBasePath = $appBasePath ?? '';
                         <span>${escapeHtml(coop.nombre)}</span>
                         <span>${pct(coop.avance?.completitud_pct).toFixed(0)}%</span>
                     </div>
-                    <div class="step-edit-muted">${Number(coop.productores_count || 0)} productores · ${escapeHtml(coop.cuit || 'Sin CUIT')}</div>
+                    <div class="step-edit-muted">${Number(coop.productores_count || 0)} productores · ${Number(coop.avance?.completos || 0)} completados · ${Number(coop.avance?.en_progreso ?? coop.avance?.pendientes ?? 0)} en progreso</div>
+                    <div class="step-edit-muted">${escapeHtml(coop.cuit || 'Sin CUIT')}</div>
                     <div class="step-edit-progress"><span style="width:${pct(coop.avance?.completitud_pct)}%"></span></div>
                 </article>
             `).join('')}</div>`;
@@ -647,6 +744,7 @@ $stepEditBasePath = $appBasePath ?? '';
             setStep('productores');
             state.productor = null;
             state.form = null;
+            state.formDirty = false;
             subtitle().textContent = `${state.operativo.nombre} · ${state.coop.nombre}`;
             renderFlowbar();
             renderLoading('Cargando productores...');
@@ -661,11 +759,11 @@ $stepEditBasePath = $appBasePath ?? '';
                 <article class="step-edit-list-card" data-prod-id="${escapeHtml(prod.id_real)}">
                     <div class="step-edit-list-title">
                         <span>${escapeHtml(prod.nombre)}</span>
-                        <span>${pct(prod.avance?.completitud_pct).toFixed(0)}%</span>
+                        ${estadoBadge(prod.estado_relevamiento)}
                     </div>
                     <div class="step-edit-muted">${escapeHtml(prod.id_real)} · ${escapeHtml(prod.cuit || 'Sin CUIT')}</div>
                     <div class="step-edit-progress"><span style="width:${pct(prod.avance?.completitud_pct)}%"></span></div>
-                    <div class="step-edit-muted" style="margin-top:.4rem;">Pendientes: ${Number(prod.avance?.pendientes || 0)}</div>
+                    <div class="step-edit-muted" style="margin-top:.4rem;">Estado: ${escapeHtml(prod.estado_relevamiento_label || estadoLabel(prod.estado_relevamiento))}</div>
                 </article>
             `).join('')}</div>`;
 
@@ -715,7 +813,7 @@ $stepEditBasePath = $appBasePath ?? '';
                         const pendingEl = content().querySelector(`[data-prod-pending="${id}"]`);
                         if (pctEl) pctEl.textContent = `${pct(avance.completitud_pct).toFixed(0)}%`;
                         if (barEl) barEl.style.width = `${pct(avance.completitud_pct)}%`;
-                        if (pendingEl) pendingEl.textContent = `Pendientes: ${Number(avance.pendientes || 0)}`;
+                        if (pendingEl) pendingEl.textContent = `En progreso: ${Number(avance.en_progreso || avance.pendientes || 0)}`;
                     } catch (e) {
                         console.warn('[StepEdit] avance productor', e);
                     }
@@ -837,7 +935,8 @@ $stepEditBasePath = $appBasePath ?? '';
             content().innerHTML = `
                 <div class="step-edit-form-layout">
                     <aside class="step-edit-side">
-                        ${progressBar(state.form.avance, 'Productor')}
+                        ${productorStatusPanel()}
+                        ${progressBar(state.form.avance, 'Campos del formulario')}
                         ${state.coop?.avance ? progressBar(state.coop.avance, 'Cooperativa') : ''}
                     </aside>
                     <div>${formHtml || '<div class="step-edit-empty">Este operativo no tiene campos aplicables al productor seleccionado.</div>'}</div>
@@ -849,6 +948,7 @@ $stepEditBasePath = $appBasePath ?? '';
                 input.addEventListener('change', handler);
                 input.addEventListener('input', handler);
             });
+
         }
 
         async function loadForm() {
@@ -867,6 +967,7 @@ $stepEditBasePath = $appBasePath ?? '';
                     state.cache.formsByProductor[productorId] = state.form;
                 }
             }
+            state.formDirty = false;
             renderForm();
         }
 
@@ -899,8 +1000,80 @@ $stepEditBasePath = $appBasePath ?? '';
                 el.className = 'step-edit-save-state';
                 el.textContent = 'Guardando...';
             }
+            state.formDirty = true;
             clearTimeout(state.saveTimers.get(key));
             state.saveTimers.set(key, setTimeout(() => saveField(input), 900));
+        }
+
+        async function flushPendingSaves() {
+            const inputs = Array.from(content().querySelectorAll('[data-step-field]'));
+            state.saveTimers.forEach((timer) => clearTimeout(timer));
+            state.saveTimers.clear();
+            await Promise.all(inputs.map((input) => saveField(input)));
+        }
+
+        async function saveProductorEstado(estado, options = {}) {
+            if (!state.operativo || !state.productor) return null;
+            const data = await apiPost({
+                action: 'save_productor_estado',
+                operativo_id: state.operativo.id,
+                productor_id_real: state.productor.id_real,
+                estado
+            });
+
+            state.productor.estado_relevamiento = data.estado;
+            state.productor.estado_relevamiento_label = data.label;
+            state.productor.avance = data.avance;
+            if (state.form) {
+                state.form.estado_relevamiento = { estado: data.estado, label: data.label };
+            }
+
+            if (state.cache?.productoresByCoop?.[state.coop?.id_real]) {
+                const cached = state.cache.productoresByCoop[state.coop.id_real].find((prod) => String(prod.id_real) === String(state.productor.id_real));
+                if (cached) {
+                    cached.estado_relevamiento = data.estado;
+                    cached.estado_relevamiento_label = data.label;
+                    cached.avance = data.avance;
+                }
+            }
+
+            if (state.coop) {
+                state.coop.avance = await apiGet('avance_cooperativa', {
+                    operativo_id: state.operativo.id,
+                    coop_id_real: state.coop.id_real
+                });
+            }
+
+            if (options.stayOnForm) {
+                renderForm();
+            }
+
+            return data;
+        }
+
+        function showProductorEstadoModal() {
+            const modalEl = productorEstadoModal();
+            modalEl.classList.remove('hidden');
+            modalEl.setAttribute('aria-hidden', 'false');
+        }
+
+        function hideProductorEstadoModal() {
+            const modalEl = productorEstadoModal();
+            modalEl.classList.add('hidden');
+            modalEl.setAttribute('aria-hidden', 'true');
+        }
+
+        async function saveEstadoAndBack(estado) {
+            try {
+                await flushPendingSaves();
+                await saveProductorEstado(estado);
+                hideProductorEstadoModal();
+                state.formDirty = false;
+                await loadProductores();
+            } catch (e) {
+                const body = productorEstadoModal().querySelector('.modal-body');
+                if (body) body.innerHTML = `<p>${escapeHtml(e.message)}</p>`;
+            }
         }
 
         async function saveField(input) {
@@ -924,7 +1097,7 @@ $stepEditBasePath = $appBasePath ?? '';
                 }
                 const side = content().querySelector('.step-edit-side');
                 if (side) {
-                    side.innerHTML = `${progressBar(state.form.avance, 'Productor')}${state.coop?.avance ? progressBar(state.coop.avance, 'Cooperativa') : ''}`;
+                    side.innerHTML = `${productorStatusPanel()}${progressBar(state.form.avance, 'Campos del formulario')}${state.coop?.avance ? progressBar(state.coop.avance, 'Cooperativa') : ''}`;
                 }
             } catch (e) {
                 if (el) {
@@ -944,14 +1117,26 @@ $stepEditBasePath = $appBasePath ?? '';
 
         function close() {
             state.loadingToken++;
+            closeConfirmModal().classList.add('hidden');
+            productorEstadoModal().classList.add('hidden');
             modal().classList.add('hidden');
             modal().setAttribute('aria-hidden', 'true');
+        }
+
+        function requestClose() {
+            const confirmModal = closeConfirmModal();
+            confirmModal.classList.remove('hidden');
+            confirmModal.setAttribute('aria-hidden', 'false');
         }
 
         document.addEventListener('click', (ev) => {
             const back = ev.target.closest?.('[data-step-edit-back]');
             if (!back) return;
             if (state.step === 'edicion') {
+                if (state.formDirty) {
+                    showProductorEstadoModal();
+                    return;
+                }
                 loadProductores();
             } else if (state.step === 'productores') {
                 loadCooperativas();
@@ -962,10 +1147,36 @@ $stepEditBasePath = $appBasePath ?? '';
 
         document.addEventListener('keydown', (ev) => {
             if (ev.key === 'Escape' && !modal().classList.contains('hidden')) {
-                close();
+                requestClose();
             }
         });
 
-        return { open, close };
+        document.addEventListener('click', (ev) => {
+            if (ev.target.closest?.('[data-step-edit-cancel-close]')) {
+                closeConfirmModal().classList.add('hidden');
+                closeConfirmModal().setAttribute('aria-hidden', 'true');
+                return;
+            }
+
+            if (ev.target.closest?.('[data-step-edit-confirm-close]')) {
+                close();
+                return;
+            }
+
+            const stateButton = ev.target.closest?.('[data-step-edit-state]');
+            if (stateButton) {
+                saveEstadoAndBack(stateButton.dataset.stepEditState);
+                return;
+            }
+
+            const saveStateButton = ev.target.closest?.('[data-step-edit-save-state-button]');
+            if (saveStateButton) {
+                saveProductorEstado(saveStateButton.dataset.stepEditSaveStateButton, { stayOnForm: true }).catch((e) => {
+                    content().querySelector('.step-edit-side')?.insertAdjacentHTML('afterbegin', `<div class="step-edit-save-state error">${escapeHtml(e.message)}</div>`);
+                });
+            }
+        });
+
+        return { open, close, requestClose };
     })();
 </script>

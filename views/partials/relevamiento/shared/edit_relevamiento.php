@@ -434,7 +434,6 @@ $relevamientoReadOnly = !empty($relevamiento_read_only);
                     <h2 id="cards-title">Relevamiento</h2>
                     <?php if ($relevamientoReadOnly): ?>
                         <button type="button" class="btn btn-aceptar" onclick="window.StepEdit && window.StepEdit.open()">
-                            <span class="material-symbols-outlined">edit_note</span>
                             Operativos
                         </button>
                     <?php endif; ?>

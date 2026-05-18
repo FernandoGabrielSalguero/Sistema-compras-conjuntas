@@ -62,3 +62,22 @@ CREATE TABLE IF NOT EXISTS relevamiento_cambios (
         ON DELETE CASCADE
         ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS relevamiento_productor_estados (
+    id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+    operativo_id INT(11) NOT NULL,
+    productor_id_real VARCHAR(20) NOT NULL,
+    estado ENUM('en_progreso','completado') NOT NULL DEFAULT 'en_progreso',
+    updated_by_real VARCHAR(20) NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_relevamiento_productor_estado (operativo_id, productor_id_real),
+    KEY idx_relevamiento_productor_estados_operativo_estado (operativo_id, estado),
+    KEY idx_relevamiento_productor_estados_productor (productor_id_real),
+    CONSTRAINT fk_relevamiento_productor_estados_operativo
+        FOREIGN KEY (operativo_id)
+        REFERENCES relevamiento_operativos (id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -58,6 +58,7 @@ final class StepEditModel
         $this->pdo = $pdo;
         $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+        $this->ensureEstadosTable();
     }
 
     public function listarOperativosAbiertos(): array
@@ -76,14 +77,15 @@ final class StepEditModel
 
     public function listarCooperativasConAvance(int $operativoId, string $ingenieroIdReal): array
     {
-        $campos = $this->getCamposOperativoAbierto($operativoId);
+        $this->getCamposOperativoAbierto($operativoId);
         $coops = $this->getCoopsByIngeniero($ingenieroIdReal);
 
         foreach ($coops as &$coop) {
             $productores = $this->getProductoresByCooperativa((string)$coop['id_real'], $ingenieroIdReal);
             $ids = array_values(array_map(static fn($p) => (string)$p['id_real'], $productores));
             $coop['productores_count'] = count($ids);
-            $coop['avance'] = $this->calcularAvanceParaProductores($operativoId, $campos, $ids);
+            $this->ensureProductorEstadoRows($operativoId, $ids);
+            $coop['avance'] = $this->calcularAvanceEstadosProductores($operativoId, $ids);
         }
         unset($coop);
 
@@ -97,7 +99,10 @@ final class StepEditModel
 
         foreach ($coops as &$coop) {
             $productores = $this->getProductoresByCooperativa((string)$coop['id_real'], $ingenieroIdReal);
+            $ids = array_values(array_map(static fn($p) => (string)$p['id_real'], $productores));
+            $this->ensureProductorEstadoRows($operativoId, $ids);
             $coop['productores_count'] = count($productores);
+            $coop['avance'] = $this->calcularAvanceEstadosProductores($operativoId, $ids);
         }
         unset($coop);
 
@@ -107,11 +112,16 @@ final class StepEditModel
     public function listarProductoresConAvance(int $operativoId, string $coopIdReal, string $ingenieroIdReal): array
     {
         $this->assertCoopPerteneceAIngeniero($coopIdReal, $ingenieroIdReal);
-        $campos = $this->getCamposOperativoAbierto($operativoId);
+        $this->getCamposOperativoAbierto($operativoId);
         $productores = $this->getProductoresByCooperativa($coopIdReal, $ingenieroIdReal);
 
+        $ids = array_values(array_map(static fn($p) => (string)$p['id_real'], $productores));
+        $estadoMap = $this->getEstadosProductores($operativoId, $ids);
         foreach ($productores as &$productor) {
-            $productor['avance'] = $this->calcularAvanceProductor($operativoId, $campos, (string)$productor['id_real']);
+            $estado = $estadoMap[(string)$productor['id_real']] ?? 'en_progreso';
+            $productor['estado_relevamiento'] = $estado;
+            $productor['estado_relevamiento_label'] = $this->estadoLabel($estado);
+            $productor['avance'] = $this->avanceDesdeEstado($estado);
         }
         unset($productor);
 
@@ -122,7 +132,19 @@ final class StepEditModel
     {
         $this->getCamposOperativoAbierto($operativoId);
         $this->assertCoopPerteneceAIngeniero($coopIdReal, $ingenieroIdReal);
-        return $this->getProductoresByCooperativa($coopIdReal, $ingenieroIdReal);
+        $productores = $this->getProductoresByCooperativa($coopIdReal, $ingenieroIdReal);
+        $ids = array_values(array_map(static fn($p) => (string)$p['id_real'], $productores));
+        $estadoMap = $this->getEstadosProductores($operativoId, $ids);
+
+        foreach ($productores as &$productor) {
+            $estado = $estadoMap[(string)$productor['id_real']] ?? 'en_progreso';
+            $productor['estado_relevamiento'] = $estado;
+            $productor['estado_relevamiento_label'] = $this->estadoLabel($estado);
+            $productor['avance'] = $this->avanceDesdeEstado($estado);
+        }
+        unset($productor);
+
+        return $productores;
     }
 
     public function obtenerFormularioProductor(int $operativoId, string $productorIdReal, string $ingenieroIdReal): array
@@ -141,29 +163,31 @@ final class StepEditModel
             'cuarteles' => $cuarteles,
             'campos' => $this->decorateCampos($campos),
             'values' => $values,
+            'estado_relevamiento' => $this->obtenerEstadoProductor($operativoId, $productorIdReal, $ingenieroIdReal),
         ];
     }
 
     public function obtenerAvanceCooperativa(int $operativoId, string $coopIdReal, string $ingenieroIdReal): array
     {
         $this->assertCoopPerteneceAIngeniero($coopIdReal, $ingenieroIdReal);
-        $campos = $this->getCamposOperativoAbierto($operativoId);
+        $this->getCamposOperativoAbierto($operativoId);
         $productores = $this->getProductoresByCooperativa($coopIdReal, $ingenieroIdReal);
         $ids = array_values(array_map(static fn($p) => (string)$p['id_real'], $productores));
 
-        return $this->calcularAvanceParaProductores($operativoId, $campos, $ids);
+        return $this->calcularAvanceEstadosProductores($operativoId, $ids);
     }
 
     public function obtenerAvanceProductorPublico(int $operativoId, string $productorIdReal, string $ingenieroIdReal): array
     {
         $this->assertProductorPerteneceAIngeniero($productorIdReal, $ingenieroIdReal);
-        $campos = $this->getCamposOperativoAbierto($operativoId);
-        return $this->calcularAvanceProductor($operativoId, $campos, $productorIdReal);
+        $this->getCamposOperativoAbierto($operativoId);
+        $estado = $this->getEstadoProductor($operativoId, $productorIdReal);
+        return $this->avanceDesdeEstado($estado);
     }
 
     public function obtenerAvanceGeneral(int $operativoId, string $ingenieroIdReal): array
     {
-        $campos = $this->getCamposOperativoAbierto($operativoId);
+        $this->getCamposOperativoAbierto($operativoId);
         $coops = $this->listarCooperativasConAvance($operativoId, $ingenieroIdReal);
         $productorIds = [];
         foreach ($coops as $coop) {
@@ -173,8 +197,64 @@ final class StepEditModel
         }
 
         return [
-            'general' => $this->calcularAvanceParaProductores($operativoId, $campos, array_values(array_unique($productorIds))),
+            'general' => $this->calcularAvanceEstadosProductores($operativoId, array_values(array_unique($productorIds))),
             'cooperativas' => $coops,
+        ];
+    }
+
+    public function obtenerEstadoProductor(int $operativoId, string $productorIdReal, string $ingenieroIdReal): array
+    {
+        $this->getCamposOperativoAbierto($operativoId);
+        $productorIdReal = trim($productorIdReal);
+        if ($productorIdReal === '') {
+            throw new InvalidArgumentException('Productor invalido');
+        }
+        $this->assertProductorPerteneceAIngeniero($productorIdReal, $ingenieroIdReal);
+        $estado = $this->getEstadoProductor($operativoId, $productorIdReal);
+
+        return [
+            'estado' => $estado,
+            'label' => $this->estadoLabel($estado),
+        ];
+    }
+
+    public function guardarEstadoProductor(array $payload, string $ingenieroIdReal): array
+    {
+        $operativoId = (int)($payload['operativo_id'] ?? 0);
+        $productorIdReal = trim((string)($payload['productor_id_real'] ?? ''));
+        $estado = trim((string)($payload['estado'] ?? ''));
+
+        $this->getCamposOperativoAbierto($operativoId);
+        if ($productorIdReal === '') {
+            throw new InvalidArgumentException('Productor invalido');
+        }
+        if (!in_array($estado, ['en_progreso', 'completado'], true)) {
+            throw new InvalidArgumentException('Estado invalido');
+        }
+
+        $this->assertProductorPerteneceAIngeniero($productorIdReal, $ingenieroIdReal);
+
+        $stmt = $this->pdo->prepare("
+            INSERT INTO relevamiento_productor_estados
+                (operativo_id, productor_id_real, estado, updated_by_real)
+            VALUES
+                (:operativo_id, :productor_id_real, :estado, :updated_by_real)
+            ON DUPLICATE KEY UPDATE
+                estado = VALUES(estado),
+                updated_by_real = VALUES(updated_by_real),
+                updated_at = CURRENT_TIMESTAMP
+        ");
+        $stmt->execute([
+            ':operativo_id' => $operativoId,
+            ':productor_id_real' => $productorIdReal,
+            ':estado' => $estado,
+            ':updated_by_real' => $ingenieroIdReal,
+        ]);
+
+        return [
+            'estado' => $estado,
+            'label' => $this->estadoLabel($estado),
+            'avance' => $this->avanceDesdeEstado($estado),
         ];
     }
 
@@ -239,6 +319,160 @@ final class StepEditModel
         ");
         $stmt->execute([':id' => $operativoId]);
         return $stmt->fetchAll() ?: [];
+    }
+
+    private function ensureEstadosTable(): void
+    {
+        $this->pdo->exec("
+            CREATE TABLE IF NOT EXISTS relevamiento_productor_estados (
+                id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+                operativo_id INT(11) NOT NULL,
+                productor_id_real VARCHAR(20) NOT NULL,
+                estado ENUM('en_progreso','completado') NOT NULL DEFAULT 'en_progreso',
+                updated_by_real VARCHAR(20) NULL,
+                created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                PRIMARY KEY (id),
+                UNIQUE KEY uq_relevamiento_productor_estado (operativo_id, productor_id_real),
+                KEY idx_relevamiento_productor_estados_operativo_estado (operativo_id, estado),
+                KEY idx_relevamiento_productor_estados_productor (productor_id_real),
+                CONSTRAINT fk_relevamiento_productor_estados_operativo
+                    FOREIGN KEY (operativo_id)
+                    REFERENCES relevamiento_operativos (id)
+                    ON DELETE CASCADE
+                    ON UPDATE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        ");
+    }
+
+    private function ensureProductorEstadoRows(int $operativoId, array $productorIdsReal): void
+    {
+        $ids = array_values(array_unique(array_filter(array_map(static fn($id) => trim((string)$id), $productorIdsReal))));
+        if (!$ids) {
+            return;
+        }
+
+        $stmt = $this->pdo->prepare("
+            INSERT IGNORE INTO relevamiento_productor_estados
+                (operativo_id, productor_id_real, estado)
+            VALUES
+                (:operativo_id, :productor_id_real, 'en_progreso')
+        ");
+
+        foreach ($ids as $idReal) {
+            $stmt->execute([
+                ':operativo_id' => $operativoId,
+                ':productor_id_real' => $idReal,
+            ]);
+        }
+    }
+
+    private function getEstadosProductores(int $operativoId, array $productorIdsReal): array
+    {
+        $ids = array_values(array_unique(array_filter(array_map(static fn($id) => trim((string)$id), $productorIdsReal))));
+        $this->ensureProductorEstadoRows($operativoId, $ids);
+        if (!$ids) {
+            return [];
+        }
+
+        $placeholders = [];
+        $params = [':operativo_id' => $operativoId];
+        foreach ($ids as $idx => $idReal) {
+            $key = ':prod' . $idx;
+            $placeholders[] = $key;
+            $params[$key] = $idReal;
+        }
+
+        $stmt = $this->pdo->prepare("
+            SELECT productor_id_real, estado
+            FROM relevamiento_productor_estados
+            WHERE operativo_id = :operativo_id
+              AND productor_id_real IN (" . implode(',', $placeholders) . ")
+        ");
+        $stmt->execute($params);
+
+        $map = [];
+        foreach ($stmt->fetchAll() ?: [] as $row) {
+            $map[(string)$row['productor_id_real']] = (string)$row['estado'];
+        }
+
+        return $map;
+    }
+
+    private function getEstadoProductor(int $operativoId, string $productorIdReal): string
+    {
+        $this->ensureProductorEstadoRows($operativoId, [$productorIdReal]);
+        $stmt = $this->pdo->prepare("
+            SELECT estado
+            FROM relevamiento_productor_estados
+            WHERE operativo_id = :operativo_id
+              AND productor_id_real = :productor_id_real
+            LIMIT 1
+        ");
+        $stmt->execute([
+            ':operativo_id' => $operativoId,
+            ':productor_id_real' => $productorIdReal,
+        ]);
+        $estado = (string)($stmt->fetchColumn() ?: 'en_progreso');
+        return in_array($estado, ['en_progreso', 'completado'], true) ? $estado : 'en_progreso';
+    }
+
+    private function calcularAvanceEstadosProductores(int $operativoId, array $productorIdsReal): array
+    {
+        $ids = array_values(array_unique(array_filter(array_map(static fn($id) => trim((string)$id), $productorIdsReal))));
+        $total = count($ids);
+        if ($total === 0) {
+            return [
+                'esperados' => 0,
+                'completos' => 0,
+                'auditados' => 0,
+                'pendientes' => 0,
+                'en_progreso' => 0,
+                'completitud_pct' => 0.0,
+                'actividad_pct' => 0.0,
+                'medicion' => 'productores',
+            ];
+        }
+
+        $estados = $this->getEstadosProductores($operativoId, $ids);
+        $completos = 0;
+        foreach ($ids as $idReal) {
+            if (($estados[$idReal] ?? 'en_progreso') === 'completado') {
+                $completos++;
+            }
+        }
+        $enProgreso = max(0, $total - $completos);
+
+        return [
+            'esperados' => $total,
+            'completos' => $completos,
+            'auditados' => $completos,
+            'pendientes' => $enProgreso,
+            'en_progreso' => $enProgreso,
+            'completitud_pct' => round(($completos / $total) * 100, 2),
+            'actividad_pct' => round(($completos / $total) * 100, 2),
+            'medicion' => 'productores',
+        ];
+    }
+
+    private function avanceDesdeEstado(string $estado): array
+    {
+        $completo = $estado === 'completado' ? 1 : 0;
+        return [
+            'esperados' => 1,
+            'completos' => $completo,
+            'auditados' => $completo,
+            'pendientes' => $completo ? 0 : 1,
+            'en_progreso' => $completo ? 0 : 1,
+            'completitud_pct' => $completo ? 100.0 : 0.0,
+            'actividad_pct' => $completo ? 100.0 : 0.0,
+            'medicion' => 'productores',
+        ];
+    }
+
+    private function estadoLabel(string $estado): string
+    {
+        return $estado === 'completado' ? 'Completado' : 'En progreso';
     }
 
     private function getCoopsByIngeniero(string $ingenieroIdReal): array
