@@ -590,9 +590,23 @@ final class StepEditModel
     private function getCuartelesProductor(string $productorIdReal): array
     {
         $stmt = $this->pdo->prepare("
-            SELECT DISTINCT pc.id, pc.finca_id, pc.codigo_finca, pc.nombre_finca, pc.codigo_cuartel, pc.variedad, pc.sistema_conduccion
+            SELECT DISTINCT
+                pc.id,
+                pc.finca_id,
+                pc.codigo_finca,
+                pc.nombre_finca,
+                pc.codigo_cuartel,
+                pc.variedad,
+                cvf.nombre_variedad,
+                COALESCE(NULLIF(TRIM(cvf.nombre_variedad), ''), NULLIF(TRIM(pc.variedad), '')) AS variedad_display,
+                pc.sistema_conduccion
             FROM prod_cuartel pc
             LEFT JOIN prod_fincas pf ON pf.id = pc.finca_id
+            LEFT JOIN codigo_variedades_fincas cvf
+                ON cvf.codigo_variedad = CASE
+                    WHEN TRIM(COALESCE(pc.variedad, '')) REGEXP '^[0-9]+$' THEN CAST(TRIM(pc.variedad) AS UNSIGNED)
+                    ELSE NULL
+                END
             WHERE (pc.id_responsable_real = :prod OR pf.productor_id_real = :prod)
               AND COALESCE(pc.archivado, 0) = 0
             ORDER BY pc.codigo_finca ASC, pc.codigo_cuartel ASC, pc.id ASC

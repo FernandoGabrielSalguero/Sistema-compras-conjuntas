@@ -895,12 +895,12 @@ $stepEditBasePath = $appBasePath ?? '';
         }
 
         function cuartelTitle(cuartel) {
-            const variedad = String(
+            const variedadRaw = String(
                 cuartel?.variedad_display ??
                 cuartel?.nombre_variedad ??
-                cuartel?.variedad ??
                 ''
             ).trim();
+            const variedad = variedadRaw || (String(cuartel?.variedad ?? '').trim() ? 'Variedad sin identificar' : '');
             const sistema = String(cuartel?.sistema_conduccion ?? '').trim();
             const parts = [variedad, sistema].filter(Boolean);
             return parts.length ? parts.join(' · ') : 'Cuartel sin identificar';
