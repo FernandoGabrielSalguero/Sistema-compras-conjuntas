@@ -254,6 +254,7 @@ final class StepEditModel
                 throw new RuntimeException('Ya existe un productor con ese CUIT');
             }
 
+            $idRealSource = 'rango_cooperativa';
             $rangoStmt = $this->pdo->prepare("
                 SELECT rango_productores_inicio, rango_productores_fin
                 FROM cooperativas_rangos
@@ -262,13 +263,15 @@ final class StepEditModel
             ");
             $rangoStmt->execute([':coop' => $coopIdReal]);
             $rango = $rangoStmt->fetch();
-            if (!$rango) {
-                throw new RuntimeException('No se encontro rango de productores para la cooperativa');
-            }
-
-            $idReal = $this->obtenerProximoIdRealDisponible((int)$rango['rango_productores_inicio'], (int)$rango['rango_productores_fin']);
-            if ($idReal === null) {
-                throw new RuntimeException('No hay id_real disponible en el rango de productores');
+            if ($rango) {
+                $idReal = $this->obtenerProximoIdRealDisponible((int)$rango['rango_productores_inicio'], (int)$rango['rango_productores_fin']);
+                if ($idReal === null) {
+                    throw new RuntimeException('No hay id_real disponible en el rango de productores de la cooperativa');
+                }
+            } else {
+                // Fallback compatible con altas externas: evita bloquear relevamientos cuando la cooperativa no tiene rango configurado.
+                $idRealSource = 'fallback_unico';
+                $idReal = $this->generarIdRealUnicoSinRango();
             }
 
             $usuario = $usuarioInput !== '' ? $usuarioInput : 'prod_' . $idReal;
@@ -312,9 +315,13 @@ final class StepEditModel
                 'estado_relevamiento' => 'en_progreso',
                 'estado_relevamiento_label' => $this->estadoLabel('en_progreso'),
                 'avance' => $this->avanceDesdeEstado('en_progreso'),
+                'id_real_source' => $idRealSource,
             ];
         } catch (Throwable $e) {
             $this->pdo->rollBack();
+            if ($e instanceof PDOException && $e->getCode() === '23000') {
+                throw new RuntimeException('No se pudo crear el productor porque ya existe un dato unico registrado');
+            }
             throw $e;
         }
     }
@@ -1292,6 +1299,20 @@ final class StepEditModel
         }
 
         return null;
+    }
+
+    private function generarIdRealUnicoSinRango(): string
+    {
+        for ($i = 0; $i < 25; $i++) {
+            $idReal = (string)random_int(10000000000, 99999999999);
+            $stmt = $this->pdo->prepare("SELECT 1 FROM usuarios WHERE id_real = :id_real LIMIT 1");
+            $stmt->execute([':id_real' => $idReal]);
+            if (!$stmt->fetchColumn()) {
+                return $idReal;
+            }
+        }
+
+        throw new RuntimeException('No se pudo generar un id_real unico para el productor');
     }
 
     private function getFincaRow(int $fincaId, string $productorIdReal): array

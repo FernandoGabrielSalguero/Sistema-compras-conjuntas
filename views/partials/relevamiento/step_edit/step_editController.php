@@ -120,8 +120,11 @@ try {
 
     stepEditJson(405, ['ok' => false, 'error' => 'Metodo no permitido']);
 } catch (InvalidArgumentException $e) {
-    stepEditJson(422, ['ok' => false, 'error' => $e->getMessage()]);
+    stepEditJson(422, ['ok' => false, 'error' => $e->getMessage(), 'message' => $e->getMessage()]);
+} catch (RuntimeException $e) {
+    error_log('[step_editController] ' . $e->getMessage());
+    stepEditJson(422, ['ok' => false, 'error' => $e->getMessage(), 'message' => $e->getMessage()]);
 } catch (Throwable $e) {
     error_log('[step_editController] ' . $e->getMessage());
-    stepEditJson(500, ['ok' => false, 'error' => $e->getMessage()]);
+    stepEditJson(500, ['ok' => false, 'error' => 'Error interno del relevamiento', 'message' => 'Error interno del relevamiento']);
 }
