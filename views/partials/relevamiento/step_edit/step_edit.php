@@ -37,34 +37,48 @@ $stepEditBasePath = $appBasePath ?? '';
     }
 
     .step-edit-head {
-        display: flex;
+        display: grid;
+        grid-template-columns: minmax(180px, 1fr) minmax(220px, auto) minmax(260px, 1fr) auto;
         gap: 1rem;
-        align-items: flex-start;
-        justify-content: space-between;
+        align-items: center;
         padding: 18px 20px 14px;
         border-bottom: 1px solid rgba(148, 163, 184, .35);
     }
 
-    .step-edit-head-main {
+    .step-edit-head-left,
+    .step-edit-head-main,
+    .step-edit-head-right {
         min-width: 0;
     }
 
-    .step-edit-head-title-row {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: .55rem .75rem;
+    .step-edit-head-left {
+        justify-self: start;
     }
 
     .step-edit-head h2 {
         margin: 0;
         font-size: 1.18rem;
+        text-align: center;
+    }
+
+    .step-edit-head-main {
+        justify-self: center;
+        text-align: center;
     }
 
     .step-edit-subtitle {
         margin: .25rem 0 0;
         color: rgba(15, 23, 42, .68);
         font-size: .9rem;
+    }
+
+    .step-edit-head-right {
+        justify-self: end;
+        width: min(360px, 100%);
+    }
+
+    .step-edit-head > .btn-icon {
+        justify-self: end;
     }
 
     .step-edit-head-flowbar {
@@ -90,20 +104,6 @@ $stepEditBasePath = $appBasePath ?? '';
     .step-edit-body {
         overflow: auto;
         padding: 18px 20px 22px;
-    }
-
-    .step-edit-flowbar {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: .5rem;
-        margin-bottom: 1rem;
-    }
-
-    .step-edit-flowbar button {
-        display: inline-flex;
-        align-items: center;
-        gap: .25rem;
     }
 
     .step-edit-current {
@@ -352,17 +352,14 @@ $stepEditBasePath = $appBasePath ?? '';
 
     .step-edit-search-tools {
         display: flex;
-        flex-wrap: wrap;
+        flex-direction: column;
         align-items: center;
-        justify-content: space-between;
-        gap: .75rem;
-        margin-bottom: 1rem;
+        gap: .25rem;
     }
 
     .step-edit-search-wrap {
         position: relative;
-        flex: 1 1 280px;
-        max-width: 460px;
+        width: 100%;
     }
 
     .step-edit-search-wrap .material-symbols-outlined {
@@ -386,9 +383,11 @@ $stepEditBasePath = $appBasePath ?? '';
     }
 
     .step-edit-search-status {
-        min-height: 20px;
+        width: 100%;
+        min-height: 0;
         color: rgba(15, 23, 42, .66);
-        font-size: .86rem;
+        font-size: .78rem;
+        line-height: 1.25;
     }
 
     .step-edit-accordion-stack {
@@ -548,6 +547,8 @@ $stepEditBasePath = $appBasePath ?? '';
 
         .step-edit-head {
             padding: 14px;
+            grid-template-columns: 1fr;
+            align-items: stretch;
         }
 
         .step-edit-body {
@@ -555,9 +556,10 @@ $stepEditBasePath = $appBasePath ?? '';
             padding-right: 14px;
         }
 
-        .step-edit-head-title-row {
-            align-items: flex-start;
-            flex-direction: column;
+        .step-edit-head-left,
+        .step-edit-head-main,
+        .step-edit-head-right {
+            justify-self: stretch;
         }
 
         .step-edit-head-flowbar .step-edit-current,
@@ -565,9 +567,8 @@ $stepEditBasePath = $appBasePath ?? '';
             max-width: min(72vw, 320px);
         }
 
-        .step-edit-search-wrap {
-            max-width: none;
-            flex-basis: 100%;
+        .step-edit-head-right {
+            width: 100%;
         }
     }
 </style>
@@ -575,20 +576,20 @@ $stepEditBasePath = $appBasePath ?? '';
 <div id="step-edit-modal" class="step-edit-modal hidden" aria-hidden="true">
     <div class="step-edit-dialog" role="dialog" aria-modal="true" aria-labelledby="step-edit-title">
         <div class="step-edit-head">
+            <div class="step-edit-head-left">
+                <div id="step-edit-head-flowbar" class="step-edit-head-flowbar"></div>
+            </div>
             <div class="step-edit-head-main">
-                <div class="step-edit-head-title-row">
-                    <div id="step-edit-head-flowbar" class="step-edit-head-flowbar"></div>
-                    <h2 id="step-edit-title">Operativo de relevamiento</h2>
-                </div>
+                <h2 id="step-edit-title">Operativo de relevamiento</h2>
                 <p class="step-edit-subtitle" id="step-edit-subtitle">Selecciona un operativo abierto para empezar.</p>
             </div>
+            <div class="step-edit-head-right" id="step-edit-head-search"></div>
             <button type="button" class="btn-icon" onclick="StepEdit.requestClose()" aria-label="Cerrar">
                 <span class="material-symbols-outlined">close</span>
             </button>
         </div>
 
         <div class="step-edit-body">
-            <div id="step-edit-flowbar" class="step-edit-flowbar"></div>
             <div id="step-edit-progress" class="step-edit-progress-stack"></div>
             <div id="step-edit-content"></div>
         </div>
@@ -733,8 +734,8 @@ $stepEditBasePath = $appBasePath ?? '';
         const modal = () => document.getElementById('step-edit-modal');
         const content = () => document.getElementById('step-edit-content');
         const progress = () => document.getElementById('step-edit-progress');
-        const flowbar = () => document.getElementById('step-edit-flowbar');
         const headerFlowbar = () => document.getElementById('step-edit-head-flowbar');
+        const headerSearch = () => document.getElementById('step-edit-head-search');
         const subtitle = () => document.getElementById('step-edit-subtitle');
         const closeConfirmModal = () => document.getElementById('step-edit-confirm-close-modal');
         const productorEstadoModal = () => document.getElementById('step-edit-productor-estado-modal');
@@ -897,9 +898,32 @@ $stepEditBasePath = $appBasePath ?? '';
         }
 
         function renderFlowbar() {
-            const items = navigationItems(false);
-            flowbar().innerHTML = items.join('');
-            headerFlowbar().innerHTML = navigationItems(true).join('');
+            headerFlowbar().innerHTML = navigationItems(false).join('');
+            if (state.step !== 'productores') {
+                renderHeaderSearch('', '', false);
+            }
+        }
+
+        function renderHeaderSearch(query = state.productorSearchQuery || '', status = '', visible = state.step === 'productores') {
+            const target = headerSearch();
+            if (!target) return;
+            if (!visible) {
+                target.innerHTML = '';
+                return;
+            }
+
+            target.innerHTML = `
+                <div class="step-edit-search-tools">
+                    <div class="step-edit-search-wrap">
+                        <span class="material-symbols-outlined" aria-hidden="true">search</span>
+                        <input type="search" class="step-edit-search-input" data-step-edit-productor-search value="${escapeHtml(query)}" placeholder="Buscar productor por nombre o CUIT..." autocomplete="off">
+                    </div>
+                    <div class="step-edit-search-status" data-step-edit-productor-search-status>${escapeHtml(status)}</div>
+                </div>
+            `;
+
+            const input = target.querySelector('[data-step-edit-productor-search]');
+            if (input) input.addEventListener('input', handleProductorSearchInput);
         }
 
         function renderLoading(text) {
@@ -1075,7 +1099,7 @@ $stepEditBasePath = $appBasePath ?? '';
             state.formDirty = false;
             state.productorSearchQuery = '';
             clearTimeout(state.productorSearchTimer);
-            subtitle().textContent = `${state.operativo.nombre} · ${state.coop.nombre}`;
+            subtitle().textContent = state.coop.nombre;
             renderFlowbar();
             renderLoading('Cargando productores...');
 
@@ -1084,40 +1108,6 @@ $stepEditBasePath = $appBasePath ?? '';
                 state.cache.productoresByCoop[state.coop.id_real] = productores;
             }
             renderProductoresList(productores);
-            return;
-            content().innerHTML = `<div class="step-edit-grid">
-                <article class="step-edit-list-card step-edit-create-card" data-step-edit-create-productor>
-                    <div>
-                        <span class="material-symbols-outlined" aria-hidden="true">person_add</span>
-                        <div class="step-edit-productor-title">Nuevo productor</div>
-                        <div class="step-edit-productor-meta">Cargar nuevo productor</div>
-                    </div>
-                </article>
-                ${productores.map((prod) => `
-                <article class="step-edit-list-card" data-prod-id="${escapeHtml(prod.id_real)}">
-                    <div class="step-edit-list-title">
-                        <span class="step-edit-productor-title">${escapeHtml(prod.nombre)}</span>
-                        ${estadoBadge(prod.estado_relevamiento)}
-                    </div>
-                    <div class="step-edit-productor-meta">ID: ${escapeHtml(prod.id_real)} · CUIT: ${escapeHtml(prod.cuit || 'Sin CUIT')}</div>
-                    <div class="step-edit-progress"><span style="width:${pct(prod.avance?.completitud_pct)}%"></span></div>
-                    <div class="step-edit-muted" style="margin-top:.4rem;">Estado: ${escapeHtml(prod.estado_relevamiento_label || estadoLabel(prod.estado_relevamiento))}</div>
-                    <div class="step-edit-card-actions">
-                        <button type="button" class="btn-icon step-edit-danger" data-step-edit-archive-productor="${escapeHtml(prod.id_real)}" title="Archivar productor" aria-label="Archivar productor">
-                            <span class="material-symbols-outlined">archive</span>
-                        </button>
-                    </div>
-                </article>
-            `).join('')}</div>`;
-
-            content().querySelectorAll('[data-prod-id]').forEach((card) => {
-                card.addEventListener('click', (ev) => {
-                    if (ev.target.closest('button')) return;
-                    const productor = productores.find((item) => String(item.id_real) === String(card.dataset.prodId));
-                    state.productor = productor;
-                    loadForm();
-                });
-            });
         }
 
         function productorCard(prod) {
@@ -1141,19 +1131,10 @@ $stepEditBasePath = $appBasePath ?? '';
 
         function renderProductoresList(productores, options = {}) {
             const query = options.query ?? state.productorSearchQuery ?? '';
-            const status = options.status ?? '';
-            const noResults = query.length >= 3 && productores.length === 0
-                ? '<div class="step-edit-empty">No se encontraron productores para la busqueda ingresada.</div>'
-                : '';
+            const status = options.status ?? (query.length >= 3 && productores.length === 0 ? 'No se encontraron productores.' : '');
+            renderHeaderSearch(query, status, true);
 
             content().innerHTML = `
-                <div class="step-edit-search-tools">
-                    <div class="step-edit-search-wrap">
-                        <span class="material-symbols-outlined" aria-hidden="true">search</span>
-                        <input type="search" class="step-edit-search-input" data-step-edit-productor-search value="${escapeHtml(query)}" placeholder="Buscar productor por nombre o CUIT..." autocomplete="off">
-                    </div>
-                    <div class="step-edit-search-status" data-step-edit-productor-search-status>${escapeHtml(status)}</div>
-                </div>
                 <div class="step-edit-grid">
                     <article class="step-edit-list-card step-edit-create-card" data-step-edit-create-productor>
                         <div>
@@ -1164,12 +1145,10 @@ $stepEditBasePath = $appBasePath ?? '';
                     </article>
                     ${productores.map((prod) => productorCard(prod)).join('')}
                 </div>
-                ${noResults}
             `;
 
-            const searchInput = content().querySelector('[data-step-edit-productor-search]');
+            const searchInput = headerSearch()?.querySelector('[data-step-edit-productor-search]');
             if (searchInput) {
-                searchInput.addEventListener('input', handleProductorSearchInput);
                 if (options.keepFocus) {
                     searchInput.focus();
                     searchInput.setSelectionRange(searchInput.value.length, searchInput.value.length);
@@ -1187,7 +1166,7 @@ $stepEditBasePath = $appBasePath ?? '';
         }
 
         function setProductorSearchStatus(text) {
-            const el = content().querySelector('[data-step-edit-productor-search-status]');
+            const el = headerSearch()?.querySelector('[data-step-edit-productor-search-status]');
             if (el) el.textContent = text;
         }
 
@@ -1512,7 +1491,7 @@ $stepEditBasePath = $appBasePath ?? '';
             if (!state.operativo) return loadOperativos();
             if (!state.productor) return loadProductores();
             setStep('edicion');
-            subtitle().textContent = `${state.operativo.nombre} · ${state.productor.nombre}`;
+            subtitle().textContent = state.coop?.nombre || state.productor.nombre;
             renderFlowbar();
             renderLoading('Cargando campos del operativo...');
             const productorId = String(state.productor.id_real);
