@@ -46,7 +46,8 @@ try {
             case 'productores':
                 $operativoId = (int)($_GET['operativo_id'] ?? 0);
                 $coopIdReal = (string)($_GET['coop_id_real'] ?? '');
-                stepEditJson(200, ['ok' => true, 'data' => $model->listarProductoresLivianos($operativoId, $coopIdReal, $ingenieroIdReal)]);
+                $q = trim((string)($_GET['q'] ?? ''));
+                stepEditJson(200, ['ok' => true, 'data' => $model->listarProductoresLivianos($operativoId, $coopIdReal, $ingenieroIdReal, $q)]);
 
             case 'form':
                 $operativoId = (int)($_GET['operativo_id'] ?? 0);

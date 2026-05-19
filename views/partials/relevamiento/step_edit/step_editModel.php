@@ -105,11 +105,11 @@ final class StepEditModel
         return $productores;
     }
 
-    public function listarProductoresLivianos(int $operativoId, string $coopIdReal, string $ingenieroIdReal): array
+    public function listarProductoresLivianos(int $operativoId, string $coopIdReal, string $ingenieroIdReal, string $q = ''): array
     {
         $this->getCamposOperativoAbierto($operativoId);
         $this->assertCoopPerteneceAIngeniero($coopIdReal, $ingenieroIdReal);
-        return $this->getProductoresByCooperativaConEstado($operativoId, $coopIdReal, $ingenieroIdReal);
+        return $this->getProductoresByCooperativaConEstado($operativoId, $coopIdReal, $ingenieroIdReal, $q);
     }
 
     public function obtenerFormularioProductor(int $operativoId, string $productorIdReal, string $ingenieroIdReal): array
@@ -812,9 +812,12 @@ final class StepEditModel
         return $stmt->fetchAll() ?: [];
     }
 
-    private function getProductoresByCooperativaConEstado(int $operativoId, string $coopIdReal, string $ingenieroIdReal): array
+    private function getProductoresByCooperativaConEstado(int $operativoId, string $coopIdReal, string $ingenieroIdReal, string $q = ''): array
     {
-        $stmt = $this->pdo->prepare("
+        $q = trim($q);
+        $applySearch = strlen($q) >= 3;
+        $qDigits = preg_replace('/\D+/', '', $q) ?? '';
+        $sql = "
             SELECT DISTINCT
                    rpc.productor_id_real AS id_real,
                    COALESCE(NULLIF(TRIM(ui.nombre), ''), NULLIF(TRIM(u.razon_social), ''), NULLIF(TRIM(u.usuario), ''), rpc.productor_id_real) AS nombre,
@@ -829,9 +832,27 @@ final class StepEditModel
             WHERE rpc.cooperativa_id_real = :coop
               AND rci.ingeniero_id_real = :ing
               AND u.archivado = 0
-            ORDER BY nombre ASC
-        ");
-        $stmt->execute([':op' => $operativoId, ':coop' => $coopIdReal, ':ing' => $ingenieroIdReal]);
+        ";
+
+        $params = [':op' => $operativoId, ':coop' => $coopIdReal, ':ing' => $ingenieroIdReal];
+        if ($applySearch) {
+            $sql .= "
+              AND (
+                COALESCE(NULLIF(TRIM(ui.nombre), ''), NULLIF(TRIM(u.razon_social), ''), NULLIF(TRIM(u.usuario), ''), rpc.productor_id_real) LIKE :q
+                OR CAST(u.cuit AS CHAR) LIKE :q
+                " . ($qDigits !== '' ? "OR REPLACE(CAST(u.cuit AS CHAR), '-', '') LIKE :q_digits" : "") . "
+              )
+            ";
+            $params[':q'] = '%' . $q . '%';
+            if ($qDigits !== '') {
+                $params[':q_digits'] = '%' . $qDigits . '%';
+            }
+        }
+
+        $sql .= " ORDER BY nombre ASC";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
 
         $productores = $stmt->fetchAll() ?: [];
         foreach ($productores as &$productor) {

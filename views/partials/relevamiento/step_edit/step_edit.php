@@ -45,6 +45,17 @@ $stepEditBasePath = $appBasePath ?? '';
         border-bottom: 1px solid rgba(148, 163, 184, .35);
     }
 
+    .step-edit-head-main {
+        min-width: 0;
+    }
+
+    .step-edit-head-title-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: .55rem .75rem;
+    }
+
     .step-edit-head h2 {
         margin: 0;
         font-size: 1.18rem;
@@ -54,6 +65,26 @@ $stepEditBasePath = $appBasePath ?? '';
         margin: .25rem 0 0;
         color: rgba(15, 23, 42, .68);
         font-size: .9rem;
+    }
+
+    .step-edit-head-flowbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: .45rem;
+        min-width: 0;
+    }
+
+    .step-edit-head-flowbar:empty {
+        display: none;
+    }
+
+    .step-edit-head-flowbar .step-edit-current,
+    .step-edit-head-flowbar .step-edit-muted {
+        max-width: 220px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .step-edit-body {
@@ -319,6 +350,47 @@ $stepEditBasePath = $appBasePath ?? '';
         background: #f8fafc;
     }
 
+    .step-edit-search-tools {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: .75rem;
+        margin-bottom: 1rem;
+    }
+
+    .step-edit-search-wrap {
+        position: relative;
+        flex: 1 1 280px;
+        max-width: 460px;
+    }
+
+    .step-edit-search-wrap .material-symbols-outlined {
+        position: absolute;
+        left: .7rem;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 20px;
+        color: rgba(15, 23, 42, .5);
+        pointer-events: none;
+    }
+
+    .step-edit-search-input {
+        width: 100%;
+        min-height: 40px;
+        border: 1px solid rgba(100, 116, 139, .4);
+        border-radius: 7px;
+        padding: .5rem .75rem .5rem 2.25rem;
+        font: inherit;
+        background: #fff;
+    }
+
+    .step-edit-search-status {
+        min-height: 20px;
+        color: rgba(15, 23, 42, .66);
+        font-size: .86rem;
+    }
+
     .step-edit-accordion-stack {
         display: grid;
         gap: .75rem;
@@ -482,14 +554,32 @@ $stepEditBasePath = $appBasePath ?? '';
             padding-left: 14px;
             padding-right: 14px;
         }
+
+        .step-edit-head-title-row {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .step-edit-head-flowbar .step-edit-current,
+        .step-edit-head-flowbar .step-edit-muted {
+            max-width: min(72vw, 320px);
+        }
+
+        .step-edit-search-wrap {
+            max-width: none;
+            flex-basis: 100%;
+        }
     }
 </style>
 
 <div id="step-edit-modal" class="step-edit-modal hidden" aria-hidden="true">
     <div class="step-edit-dialog" role="dialog" aria-modal="true" aria-labelledby="step-edit-title">
         <div class="step-edit-head">
-            <div>
-                <h2 id="step-edit-title">Operativo de relevamiento</h2>
+            <div class="step-edit-head-main">
+                <div class="step-edit-head-title-row">
+                    <div id="step-edit-head-flowbar" class="step-edit-head-flowbar"></div>
+                    <h2 id="step-edit-title">Operativo de relevamiento</h2>
+                </div>
                 <p class="step-edit-subtitle" id="step-edit-subtitle">Selecciona un operativo abierto para empezar.</p>
             </div>
             <button type="button" class="btn-icon" onclick="StepEdit.requestClose()" aria-label="Cerrar">
@@ -634,6 +724,9 @@ $stepEditBasePath = $appBasePath ?? '';
             pendingBackAfterState: false,
             pendingConfirmAction: null,
             pendingCuartelFincaId: null,
+            productorSearchTimer: null,
+            productorSearchToken: 0,
+            productorSearchQuery: '',
             variedades: null
         };
 
@@ -641,6 +734,7 @@ $stepEditBasePath = $appBasePath ?? '';
         const content = () => document.getElementById('step-edit-content');
         const progress = () => document.getElementById('step-edit-progress');
         const flowbar = () => document.getElementById('step-edit-flowbar');
+        const headerFlowbar = () => document.getElementById('step-edit-head-flowbar');
         const subtitle = () => document.getElementById('step-edit-subtitle');
         const closeConfirmModal = () => document.getElementById('step-edit-confirm-close-modal');
         const productorEstadoModal = () => document.getElementById('step-edit-productor-estado-modal');
@@ -791,15 +885,21 @@ $stepEditBasePath = $appBasePath ?? '';
             renderFlowbar();
         }
 
-        function renderFlowbar() {
+        function navigationItems(compact = false) {
             const items = [];
             if (state.step !== 'operativos' && state.step !== 'cargando') {
                 items.push(`<button type="button" class="btn-icon" data-step-edit-back title="Volver" aria-label="Volver"><span class="material-symbols-outlined">arrow_back</span></button>`);
             }
             if (state.operativo) items.push(`<span class="step-edit-current">${escapeHtml(state.operativo.nombre)}</span>`);
             if (state.coop) items.push(`<span class="step-edit-muted">/ ${escapeHtml(state.coop.nombre)}</span>`);
-            if (state.productor) items.push(`<span class="step-edit-muted">/ ${escapeHtml(state.productor.nombre)}</span>`);
+            if (!compact && state.productor) items.push(`<span class="step-edit-muted">/ ${escapeHtml(state.productor.nombre)}</span>`);
+            return items;
+        }
+
+        function renderFlowbar() {
+            const items = navigationItems(false);
             flowbar().innerHTML = items.join('');
+            headerFlowbar().innerHTML = navigationItems(true).join('');
         }
 
         function renderLoading(text) {
@@ -932,6 +1032,8 @@ $stepEditBasePath = $appBasePath ?? '';
             state.productor = null;
             state.form = null;
             state.formDirty = false;
+            state.productorSearchQuery = '';
+            clearTimeout(state.productorSearchTimer);
             subtitle().textContent = state.operativo.nombre;
             renderFlowbar();
             renderLoading('Cargando cooperativas asociadas...');
@@ -971,6 +1073,8 @@ $stepEditBasePath = $appBasePath ?? '';
             state.productor = null;
             state.form = null;
             state.formDirty = false;
+            state.productorSearchQuery = '';
+            clearTimeout(state.productorSearchTimer);
             subtitle().textContent = `${state.operativo.nombre} · ${state.coop.nombre}`;
             renderFlowbar();
             renderLoading('Cargando productores...');
@@ -979,6 +1083,8 @@ $stepEditBasePath = $appBasePath ?? '';
             if (state.cache?.productoresByCoop && !state.cache.productoresByCoop[state.coop.id_real]) {
                 state.cache.productoresByCoop[state.coop.id_real] = productores;
             }
+            renderProductoresList(productores);
+            return;
             content().innerHTML = `<div class="step-edit-grid">
                 <article class="step-edit-list-card step-edit-create-card" data-step-edit-create-productor>
                     <div>
@@ -1012,6 +1118,120 @@ $stepEditBasePath = $appBasePath ?? '';
                     loadForm();
                 });
             });
+        }
+
+        function productorCard(prod) {
+            return `
+                <article class="step-edit-list-card" data-prod-id="${escapeHtml(prod.id_real)}">
+                    <div class="step-edit-list-title">
+                        <span class="step-edit-productor-title">${escapeHtml(prod.nombre)}</span>
+                        ${estadoBadge(prod.estado_relevamiento)}
+                    </div>
+                    <div class="step-edit-productor-meta">ID: ${escapeHtml(prod.id_real)} - CUIT: ${escapeHtml(prod.cuit || 'Sin CUIT')}</div>
+                    <div class="step-edit-progress"><span style="width:${pct(prod.avance?.completitud_pct)}%"></span></div>
+                    <div class="step-edit-muted" style="margin-top:.4rem;">Estado: ${escapeHtml(prod.estado_relevamiento_label || estadoLabel(prod.estado_relevamiento))}</div>
+                    <div class="step-edit-card-actions">
+                        <button type="button" class="btn-icon step-edit-danger" data-step-edit-archive-productor="${escapeHtml(prod.id_real)}" title="Archivar productor" aria-label="Archivar productor">
+                            <span class="material-symbols-outlined">archive</span>
+                        </button>
+                    </div>
+                </article>
+            `;
+        }
+
+        function renderProductoresList(productores, options = {}) {
+            const query = options.query ?? state.productorSearchQuery ?? '';
+            const status = options.status ?? '';
+            const noResults = query.length >= 3 && productores.length === 0
+                ? '<div class="step-edit-empty">No se encontraron productores para la busqueda ingresada.</div>'
+                : '';
+
+            content().innerHTML = `
+                <div class="step-edit-search-tools">
+                    <div class="step-edit-search-wrap">
+                        <span class="material-symbols-outlined" aria-hidden="true">search</span>
+                        <input type="search" class="step-edit-search-input" data-step-edit-productor-search value="${escapeHtml(query)}" placeholder="Buscar productor por nombre o CUIT..." autocomplete="off">
+                    </div>
+                    <div class="step-edit-search-status" data-step-edit-productor-search-status>${escapeHtml(status)}</div>
+                </div>
+                <div class="step-edit-grid">
+                    <article class="step-edit-list-card step-edit-create-card" data-step-edit-create-productor>
+                        <div>
+                            <span class="material-symbols-outlined" aria-hidden="true">person_add</span>
+                            <div class="step-edit-productor-title">Nuevo productor</div>
+                            <div class="step-edit-productor-meta">Cargar nuevo productor</div>
+                        </div>
+                    </article>
+                    ${productores.map((prod) => productorCard(prod)).join('')}
+                </div>
+                ${noResults}
+            `;
+
+            const searchInput = content().querySelector('[data-step-edit-productor-search]');
+            if (searchInput) {
+                searchInput.addEventListener('input', handleProductorSearchInput);
+                if (options.keepFocus) {
+                    searchInput.focus();
+                    searchInput.setSelectionRange(searchInput.value.length, searchInput.value.length);
+                }
+            }
+
+            content().querySelectorAll('[data-prod-id]').forEach((card) => {
+                card.addEventListener('click', (ev) => {
+                    if (ev.target.closest('button')) return;
+                    const productor = productores.find((item) => String(item.id_real) === String(card.dataset.prodId));
+                    state.productor = productor;
+                    loadForm();
+                });
+            });
+        }
+
+        function setProductorSearchStatus(text) {
+            const el = content().querySelector('[data-step-edit-productor-search-status]');
+            if (el) el.textContent = text;
+        }
+
+        async function buscarProductores(query, token) {
+            if (!state.operativo || !state.coop || state.step !== 'productores') return;
+            setProductorSearchStatus('Buscando...');
+            try {
+                const productores = await apiGet('productores', {
+                    operativo_id: state.operativo.id,
+                    coop_id_real: state.coop.id_real,
+                    q: query
+                });
+                if (token !== state.productorSearchToken || state.step !== 'productores') return;
+                renderProductoresList(productores, { query, keepFocus: true });
+            } catch (e) {
+                if (token !== state.productorSearchToken || state.step !== 'productores') return;
+                renderProductoresList([], {
+                    query,
+                    status: 'No se pudo realizar la busqueda. Intentalo nuevamente.',
+                    keepFocus: true
+                });
+            }
+        }
+
+        function handleProductorSearchInput(ev) {
+            const query = String(ev.target.value || '').trim();
+            state.productorSearchQuery = query;
+            clearTimeout(state.productorSearchTimer);
+            const token = ++state.productorSearchToken;
+
+            if (query.length === 0) {
+                const base = state.cache?.productoresByCoop?.[state.coop?.id_real] || [];
+                renderProductoresList(base, { query: '', keepFocus: true });
+                return;
+            }
+
+            if (query.length < 3) {
+                setProductorSearchStatus('Ingresa al menos 3 caracteres para buscar.');
+                return;
+            }
+
+            state.productorSearchTimer = setTimeout(() => {
+                buscarProductores(query, token);
+            }, 400);
         }
 
         async function hydrateCooperativasProgress(coops) {
